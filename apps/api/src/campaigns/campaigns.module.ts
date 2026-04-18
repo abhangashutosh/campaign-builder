@@ -6,10 +6,17 @@ import { DeliveryEvent } from './entities/delivery-event.entity'
 import { CampaignsRepository } from './campaigns.repository'
 import { CampaignsService } from './campaigns.service'
 import { CampaignsController } from './campaigns.controller'
+import { SegmentsModule } from '../segments/segments.module'
+import { TemplatesModule } from '../templates/templates.module'
+import { EmailService } from '../channels/email/email.service'
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Campaign, CampaignDelivery, DeliveryEvent])],
-  providers: [CampaignsRepository, CampaignsService],
+  imports: [
+    TypeOrmModule.forFeature([Campaign, CampaignDelivery, DeliveryEvent]),
+    SegmentsModule,
+    TemplatesModule,
+  ],
+  providers: [CampaignsRepository, CampaignsService, EmailService],
   controllers: [CampaignsController],
   exports: [CampaignsService],
 })

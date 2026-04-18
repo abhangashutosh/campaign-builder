@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common'
+import { Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 import { Repository } from 'typeorm'
 import { Campaign } from './entities/campaign.entity'
@@ -26,5 +26,24 @@ export class CampaignsRepository extends TenantScopedRepository<Campaign> {
     const campaign = await this.findOneOrFail(tenantId, id)
     Object.assign(campaign, data)
     return this.repo.save(campaign)
+  }
+
+  async findWithRelations(tenantId: string, id: string): Promise<Campaign> {
+    this.assertTenant(tenantId)
+    const campaign = await this.repo.findOne({
+      where: { id, tenantId, deletedAt: null } as any,
+      relations: ['segment', 'template'],
+    })
+    if (!campaign) throw new NotFoundException(`Resource ${id} not found`)
+    return campaign
+  }
+
+  async findAllWithRelations(tenantId: string): Promise<Campaign[]> {
+    this.assertTenant(tenantId)
+    return this.repo.find({
+      where: { tenantId, deletedAt: null } as any,
+      relations: ['segment', 'template'],
+      order: { createdAt: 'DESC' },
+    })
   }
 }
