@@ -23,6 +23,8 @@ export interface Campaign {
   metadata: { frequencyCapPerDay?: number; quietHoursStart?: string; quietHoursEnd?: string; quietHoursTimezone?: string }
   createdAt: string
   updatedAt: string
+  segment?: { id: string; name: string; audienceEstimate?: number }
+  template?: { id: string; name: string; approvalStatus: string; subject?: string; htmlBody?: string; textBody?: string | null }
 }
 
 export interface Segment {

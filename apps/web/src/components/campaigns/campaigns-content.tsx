@@ -244,8 +244,8 @@ export function CampaignsContent() {
                       </div>
                     </Td>
 
-                    {/* Audience segment — not available without join */}
-                    <Td muted>—</Td>
+                    {/* Audience segment — populated when relation is eager-loaded */}
+                    <Td muted>{c.segment?.name ?? '—'}</Td>
 
                     {/* Status */}
                     <Td>
