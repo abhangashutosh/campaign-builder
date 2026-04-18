@@ -1,0 +1,52 @@
+version: '3.9'
+
+networks:
+  campaign_test_network:
+    driver: bridge
+
+services:
+  postgres_test:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: campaign_test
+    ports:
+      - "5433:5432"
+    tmpfs:
+      - /var/lib/postgresql/data
+    networks:
+      - campaign_test_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d campaign_test"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+
+  redis_test:
+    image: redis:7-alpine
+    ports:
+      - "6380:6379"
+    tmpfs:
+      - /data
+    networks:
+      - campaign_test_network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 3s
+      timeout: 3s
+      retries: 5
+
+  migrate_test:
+    image: node:20-alpine
+    working_dir: /app
+    command: sh -c "npm install -g pnpm && pnpm install && pnpm --filter @campaign/api migration:run"
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres_test:5432/campaign_test
+    volumes:
+      - ..:/app
+    networks:
+      - campaign_test_network
+    depends_on:
+      postgres_test:
+        condition: service_healthy

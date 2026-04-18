@@ -21,7 +21,8 @@ monorepo/
 └── .github/workflows/ ci.yml + build-check.yml
 ```
 
-**Color tokens (PRD):** Navy `#1A3C6B` · Orange `#E85D04` · Teal `#00C9A7` · BG `#F7F9FC` · Text `#0F172A`
+**Color tokens (design HTML — source of truth):** Navy `#1B4DFF` · Navy-50 `#EEF2FF` · Orange `#E85D04` · Teal `#00C9A7` · BG `#F7F9FC` · Text `#0F172A` · Text-2 `#475569` · Success `#16A34A` · Warning `#D97706` · Danger `#DC2626`
+> Note: Design HTML `--navy: #1B4DFF`. PRD.md says `#1A3C6B` — design file overrides PRD for all visual implementation.
 
 ---
 
@@ -78,13 +79,23 @@ UNIQUE(tenant_id, channel)
 ### `campaigns`
 ```sql
 id UUID PK, tenant_id TEXT NOT NULL, name TEXT NOT NULL,
-type TEXT CHECK IN ('one_time','scheduled','recurring','triggered'),
+description TEXT,                          -- internal campaign description
+workspace TEXT DEFAULT 'default',          -- logical grouping
+folder TEXT,                               -- organizational folder
+type TEXT CHECK IN ('one_time','scheduled','recurring','triggered','transactional','journey','api_triggered'),
 status TEXT CHECK IN ('draft','scheduled','running','paused','completed','failed','needs_review') DEFAULT 'draft',
 channels TEXT[] DEFAULT '{}',
 audience_segment_id UUID FK segments(id) ON DELETE SET NULL,
 template_id UUID FK templates(id) ON DELETE SET NULL,
 scheduled_for TIMESTAMPTZ, tags TEXT[] DEFAULT '{}', created_by TEXT NOT NULL,
-metadata JSONB DEFAULT '{}',  -- { frequencyCapPerDay, quietHoursStart, quietHoursEnd, quietHoursTimezone }
+version INT NOT NULL DEFAULT 1,            -- incremented on each publish ("Publish v4")
+ab_test_enabled BOOL NOT NULL DEFAULT false,
+ab_test_config JSONB DEFAULT '{}',
+  -- Shape: { goal: string, windowDays: int, attribution: 'last_touch'|'first_touch'|'linear' }
+utm_params JSONB DEFAULT '{}',
+  -- Shape: { source: string, medium: string, campaign: string, content: string }
+metadata JSONB DEFAULT '{}',
+  -- Shape: { frequencyCapPerDay, quietHoursStart, quietHoursEnd, quietHoursTimezone }
 created_at, updated_at, deleted_at
 INDEX: (tenant_id, status) WHERE deleted_at IS NULL
 INDEX: (scheduled_for) WHERE status='scheduled'
@@ -329,6 +340,11 @@ Makefile targets: `dev`, `dev-infra`, `test`, `test-infra`, `test-down`, `migrat
 - [ ] FK constraints verified: delivery cascade-deletes on campaign delete
 - [ ] `UNIQUE(campaign_id, contact_id, channel)` on `campaign_deliveries`
 - [ ] `CampaignMetadata` interface: `{ frequencyCapPerDay?, quietHoursStart?, quietHoursEnd?, quietHoursTimezone? }`
+- [ ] `version INT NOT NULL DEFAULT 1` column exists on `campaigns`
+- [ ] `ab_test_config JSONB DEFAULT '{}'` column exists on `campaigns`
+- [ ] `utm_params JSONB DEFAULT '{}'` column exists on `campaigns`
+- [ ] `description TEXT` column exists (nullable) on `campaigns`
+- [ ] `type` CHECK constraint includes `'transactional'`, `'journey'`, `'api_triggered'`
 
 **Tests:** Full migration run + rollback cycle on test DB.
 **Changelog:** `logs/backend/1.3-entities-group2_DDMMYYHHSS.md`
@@ -584,24 +600,28 @@ POST  /api/v1/templates/:id/validate
 
 **File:** `apps/api/src/campaigns/validators/campaign-readiness.validator.ts`
 
-Scoring (100 points total):
-| Check | Points | Blocker |
+Scoring (100 points total — exact checklist from design):
+| Check | Points | Type |
 |---|---|---|
-| Campaign has name | 10 | No |
-| At least one channel | 15 | Yes |
-| Segment assigned | 15 | Yes |
-| Template assigned | 15 | Yes |
-| Channel config active | 15 | Yes |
-| Template approved | 10 | No (warning) |
-| Segment estimate > 0 | 10 | No (warning) |
-| Subject line (email) | 10 | No (warning) |
+| Campaign has name | 10 | Warning |
+| At least one channel | 15 | Blocker |
+| Segment assigned | 15 | Blocker |
+| Template assigned | 15 | Blocker |
+| Channel config active | 15 | Blocker |
+| Template approved | 10 | Warning |
+| Segment estimate > 0 | 10 | Warning |
+| Subject line set (email only) | 10 | Warning |
 
-Returns: `{ score: 0-100, ready: score >= 80, warnings: Warning[], blockers: Blocker[] }`
+Returns: `{ score: 0-100, ready: score >= 80 && blockers.length === 0, warnings: Warning[], blockers: Blocker[] }`
+
+Special case: type `'transactional'` skips the consent/segment checks (transactional bypasses marketing consent).
 
 **Tests:**
 - No segment → `{ ready: false, blockers: [{ code: 'NO_SEGMENT' }] }`
-- All checks pass → `{ ready: true, score: 100 }`
+- All checks pass → `{ ready: true, score: 100, warnings: [], blockers: [] }`
 - Template not approved → `{ ready: true, warnings: [{ code: 'TEMPLATE_NOT_APPROVED' }] }`
+- Type `'transactional'` + no segment → still `ready: true` (consent/segment not required)
+- Score 80, no blockers → `ready: true`
 
 **Changelog:** `logs/backend/5.1-campaign-readiness_DDMMYYHHSS.md`
 
@@ -611,12 +631,12 @@ Returns: `{ score: 0-100, ready: score >= 80, warnings: Warning[], blockers: Blo
 **Log:** `logs/backend/5.2-campaigns-module_DDMMYYHHSS.md`
 
 **Key service methods:**
-- `create(tenantId, dto, userId)` — creates draft
-- `publish(tenantId, id)` — runs ReadinessValidator (throws if blockers), transitions status, enqueues dispatch job
+- `create(tenantId, dto, userId)` — creates draft; accepts new fields: `description`, `workspace`, `folder`, `ab_test_enabled`, `ab_test_config`, `utm_params`
+- `publish(tenantId, id)` — runs ReadinessValidator (throws if blockers), increments `version` by 1, transitions status, enqueues dispatch job
 - `pause(tenantId, id)` — status → 'paused'
 - `sendTest(tenantId, id, dto)` — direct email send with [TEST] prefix, no delivery row
 - `getStats(tenantId, id)` — aggregate deliveries by status
-- `getReports(tenantId, id)` — time-series delivery events
+- `getReports(tenantId, id)` — time-series delivery events + `failureBreakdown: { hardBounce: N, spamComplaint: N, invalidAddress: N }` from `delivery_events.metadata`
 
 **All service methods:** `findOneOrFail({ where: { id, tenantId } })` — tenant isolation guarantee.
 
@@ -636,9 +656,12 @@ GET   /api/v1/campaigns/:id/reports
 **Tests:**
 - PATCH on running campaign → 409
 - Publish with blockers → 422 with blockers array
+- Publish success → response includes `version: 2` (incremented from 1)
 - GET /:id with wrong tenant JWT → 404
 - send-test → no delivery row in DB
-- GET /reports → time-series array grouped by event_type
+- GET /reports → time-series array grouped by event_type + `failureBreakdown` with non-negative counts
+- Campaign type `'api_triggered'` accepted by POST /campaigns DTO without 400
+- Campaign type `'transactional'` accepted; readiness score ≥ 80 without segment
 
 **Changelog:** `logs/backend/5.2-campaigns-module_DDMMYYHHSS.md`
 
@@ -661,6 +684,49 @@ GET   /api/v1/campaigns/:id/reports
 
 ---
 
+### Task 5.4 — DomainVerificationService + endpoints
+**Agent:** Backend Dev | **Depends on:** 5.3 | **Log:** `logs/backend/5.4-domain-verification_DDMMYYHHSS.md`
+**Skills:** workflow-ship-faster, security-review
+
+**File:** `apps/api/src/settings/domain-verification.service.ts`
+
+Uses Node's built-in `dns.promises.resolveTxt()` — no external DNS library needed.
+
+**Check logic:**
+- SPF: TXT record on `domain` containing `v=spf1`
+- DKIM: TXT record on `default._domainkey.{domain}` containing `v=DKIM1`
+- DMARC: TXT record on `_dmarc.{domain}` containing `v=DMARC1`; if `p=none` → `'partial'`
+
+**Score formula:** SPF pass = 34 pts, DKIM pass = 33 pts, DMARC pass = 33 pts, DMARC partial = 16 pts
+
+**Cache:** Results in Redis, key `domain:verify:{tenantId}:{domain}`, TTL 3600s. `POST /verify` does DEL before re-check.
+
+**Endpoints:**
+```
+GET  /api/v1/settings/domains              @Roles('OWNER','ADMIN')
+     → returns array of { domain, spf, dkim, dmarc, score } for tenant's configured sender domains
+POST /api/v1/settings/domains/:domain/verify  @Roles('OWNER')
+     → force re-check, bypass cache, return updated result
+```
+
+**Acceptance criteria:**
+- [ ] Uses `dns.promises` (non-blocking, no `dns.resolve` callback form)
+- [ ] Results cached in Redis with 3600s TTL
+- [ ] `POST /verify` deletes cache key before re-checking
+- [ ] Unknown / unconfigured domain → 404 `DOMAIN_NOT_CONFIGURED`
+- [ ] Domain input validated: must be valid hostname regex before DNS query (prevents SSRF)
+
+**Tests (unit — mock `dns.promises.resolveTxt`):**
+- All 3 records present → `{ spf: 'pass', dkim: 'pass', dmarc: 'pass', score: 100 }`
+- SPF + DKIM only, no DMARC → `{ dmarc: 'missing', score: 67 }`
+- DMARC `p=none` → `{ dmarc: 'partial', score: 83 }`
+- SPF missing → `{ spf: 'missing', score: 66 }`
+- Invalid hostname input → 400 `BAD_REQUEST`
+
+**Changelog:** `logs/backend/5.4-domain-verification_DDMMYYHHSS.md`
+
+---
+
 ## Phase 6 — Frontend Foundation
 
 **Agent:** Frontend Dev
@@ -671,17 +737,33 @@ GET   /api/v1/campaigns/:id/reports
 **Skills:** ui-intelligence, frontend-patterns
 
 **Files:**
-- `apps/web/src/app/globals.css` — CSS custom properties for all color tokens from PRD
+- `apps/web/src/app/globals.css` — CSS custom properties for all color tokens (from design HTML, not PRD):
+  ```css
+  :root {
+    --navy: #1B4DFF; --navy-700: #1640D6; --navy-800: #0E30A8; --navy-50: #EEF2FF;
+    --orange: #E85D04; --orange-50: #FFF1E6;
+    --teal: #00C9A7; --teal-50: #E6FBF5;
+    --bg: #F7F9FC; --surface: #FFFFFF;
+    --text: #0F172A; --text-2: #475569; --text-3: #64748B; --text-muted: #94A3B8;
+    --border: #E2E8F0; --input: #E2E8F0;
+    --success: #16A34A; --success-50: #ECFDF3;
+    --warning: #D97706; --warning-50: #FEF6E7;
+    --danger: #DC2626; --danger-50: #FEECEC;
+    --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px;
+    --sidebar-width: 232px; --header-height: 56px;
+  }
+  ```
 - `apps/web/tailwind.config.ts` — extend with custom colors mapped to CSS vars
 - `apps/web/src/app/layout.tsx` — root layout, TanStack Query provider, Zustand hydration
 - Run `npx shadcn-ui@latest init` to install primitives (Button, Card, Badge, Table, Dialog, Select, Input, Textarea, Tabs, Sheet, Dropdown, Popover, Tooltip, Separator)
 - `apps/web/src/lib/api-client.ts` — fetch wrapper with base URL from env + auth header injection
 
 **Acceptance criteria:**
-- [ ] Primary navy `#1A3C6B` available as `bg-primary` via CSS var
+- [ ] Primary navy `#1B4DFF` available as `bg-primary` via CSS var (design HTML value, not PRD)
 - [ ] All 10 shadcn primitives installed in `src/components/ui/`
 - [ ] TanStack Query `QueryClientProvider` wraps app in root layout
 - [ ] No glassmorphism, no neon, no gratuitous gradients in globals.css
+- [ ] `--sidebar-width: 232px` and `--header-height: 56px` defined as CSS vars
 
 **Changelog:** `logs/frontend/6.1-nextjs-init_DDMMYYHHSS.md`
 
@@ -835,18 +917,74 @@ Components:
 **Files:**
 - `apps/web/src/app/(plugin)/campaigns/new/page.tsx`
 - `apps/web/src/components/campaign-builder/builder-stepper.tsx` — step indicator, forward/back nav, step validation
-- `apps/web/src/components/campaign-builder/steps/step1-type.tsx` — radio cards for One-time/Scheduled/Recurring/Triggered
+- `apps/web/src/components/campaign-builder/steps/step1-type.tsx` — 6 campaign type radio cards:
+  - One-time: "Send to a static audience on a schedule or immediately"
+  - Recurring: "Daily, weekly or monthly cadence with end date"
+  - Triggered: "Fires when a user performs a tracked event"
+  - Transactional: "Receipts, OTPs, alerts — bypass marketing consent"
+  - Journey: "Multi-step path with branches, waits and conditions"
+  - API-triggered: "Send via REST API on demand from your backend"
+  Additional fields: `description` (Textarea), `workspace` (Select), `folder` (Select), `owner` (readonly Input from auth context), `ab_test_enabled` (Switch toggle), `tags` (tag input)
+  Starting Templates section: 5 template cards (Welcome Series, Cart Abandonment, Re-engagement, Blank canvas, Transactional Receipt) — clicking pre-fills template_id
 - `apps/web/src/components/campaign-builder/steps/step2-audience.tsx` — segment picker + estimate panel
 - `apps/web/src/components/campaign-builder/steps/step3-message.tsx` — channel tabs (Email/WhatsApp), device preview toggle (desktop/mobile), variable insertion toolbar
-- `apps/web/src/components/campaign-builder/steps/step4-delivery.tsx` — frequency cap input, quiet hours time pickers + timezone selector, schedule mode selector (Now/Schedule/Smart-time), tags input
-- `apps/web/src/components/campaign-builder/steps/step5-review.tsx` — readiness score gauge (0-100), warnings list, blockers list, test send button, publish button
+- `apps/web/src/components/campaign-builder/steps/step4-delivery.tsx` — sections:
+  1. **Frequency Cap:** number input + per-unit Select (per day / per week / per month)
+  2. **Quiet Hours:** start time HH:MM + end time HH:MM + timezone mode Select (Fixed UTC / Recipient local)
+  3. **Schedule Mode:** 3 cards — Send Now / Schedule (date+time pickers) / Smart-time STO ("Send when recipient most likely to engage")
+  4. **UTM Parameters** (collapsible section, expanded by default):
+     - utm_source (Input), utm_medium (Input), utm_campaign (Input, auto-slugged from name), utm_content (Input)
+  5. **A/B Test Variants** (shown only when `ab_test_enabled = true` from Step 1):
+     - Conversion Goal (Select), Attribution Window (number + unit), Attribution Model (RadioGroup: Last-touch / First-touch / Linear)
+  6. **Throttling Preview** (readonly info card): "What will happen in the next hour" — segment estimate ÷ 24h, displayed as info badge
+- `apps/web/src/components/campaign-builder/steps/step5-review.tsx` — readiness score gauge (0-100), warnings list, blockers list
+  - Test send button: `"Send test to team (N)"` where N = team member count from tenant settings
+  - Publish button: `"Publish v${campaign.version + 1}"` (dynamic version from API)
+  - 8-item launch checklist rendered with ✓ / ⚠ / ✗ icons matching design exactly
 - `apps/web/src/components/campaign-builder/email-editor.tsx` — block-based (Hero, Text, CTA, Footer blocks), variable `{{var}}` insertion
 - `apps/web/src/components/campaign-builder/whatsapp-editor.tsx` — template selector + variable mapping inputs + media preview
 
-**Form schemas (Zod, in `packages/shared/src/`):**
+**Form schemas (Zod, in `packages/shared/src/schemas/campaign-wizard.schema.ts`):**
 ```typescript
-campaignTypeSchema, campaignAudienceSchema, campaignMessageSchema,
-campaignDeliverySchema, campaignReviewSchema
+// Step 1
+campaignTypeSchema: z.object({
+  name: z.string().min(1).max(255),
+  description: z.string().max(500).optional(),
+  type: z.enum(['one_time','scheduled','recurring','triggered','transactional','journey','api_triggered']),
+  workspace: z.string().optional(),
+  folder: z.string().optional(),
+  channels: z.array(z.enum(['email','whatsapp'])).min(1),
+  ab_test_enabled: z.boolean().default(false),
+  tags: z.array(z.string()).default([]),
+  template_id: z.string().uuid().optional(),  // from Starting Templates
+})
+// Step 2
+campaignAudienceSchema: z.object({ audience_segment_id: z.string().uuid().optional() })
+// Step 3
+campaignMessageSchema: z.object({ variable_mapping: z.record(z.string()).optional() })
+// Step 4
+campaignDeliverySchema: z.object({
+  scheduled_for: z.date().optional(),
+  metadata: z.object({
+    frequencyCapPerDay: z.number().int().min(1).optional(),
+    quietHoursStart: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+    quietHoursEnd: z.string().regex(/^\d{2}:\d{2}$/).optional(),
+    quietHoursTimezone: z.string().optional(),
+  }),
+  utm_params: z.object({
+    source: z.string().optional(),
+    medium: z.string().optional(),
+    campaign: z.string().optional(),
+    content: z.string().optional(),
+  }).optional(),
+  ab_test_config: z.object({
+    goal: z.string().optional(),
+    windowDays: z.number().int().min(1).optional(),
+    attribution: z.enum(['last_touch','first_touch','linear']).optional(),
+  }).optional(),
+})
+// Step 5
+campaignReviewSchema: z.object({})  // read-only review, no form fields
 ```
 
 **Acceptance criteria:**
@@ -855,11 +993,21 @@ campaignDeliverySchema, campaignReviewSchema
 - [ ] Device preview toggle switches email render between 600px and 375px container
 - [ ] Readiness score updates live when step 5 mounts (fetches /validation)
 - [ ] Variables marked unmapped show warning inline in editor
+- [ ] Step 1 shows all 6 campaign type cards including Transactional, Journey, API-triggered
+- [ ] Step 1 Starting Templates section shows 5 template cards
+- [ ] Step 4 UTM section collapsible with all 4 utm fields
+- [ ] Step 4 A/B config panel only visible when `ab_test_enabled = true`
+- [ ] Step 5 publish button shows `"Publish v{N}"` with correct version from API
+- [ ] Type `'transactional'` → Step 2 audience picker is optional (shows info banner)
 
 **Tests:**
-- Step 1: selecting campaign type updates store
+- Step 1: selecting campaign type updates store; all 6 types selectable
+- Step 1: selecting Starting Template pre-fills template_id in store
 - Step 2: selecting segment triggers estimate fetch
+- Step 4: UTM campaign field auto-slugged from campaign name on focus
+- Step 4: A/B panel hidden by default, visible when ab_test_enabled toggled
 - Step 5: blockers shown → publish button disabled
+- Step 5: publish button label includes correct version number
 
 **Changelog:** `logs/frontend/7.4-campaign-builder_DDMMYYHHSS.md`
 
@@ -892,13 +1040,22 @@ Node types: Trigger, Segment Check, Wait, Condition Split, Send Email, Send What
 **Files:**
 - `apps/web/src/app/(plugin)/reports/page.tsx`
 - `apps/web/src/components/reports/campaign-performance-table.tsx` — sent/delivered/opened/clicked/failed per campaign
-- `apps/web/src/components/reports/engagement-chart.tsx` — Recharts BarChart for channel comparison
-- `apps/web/src/components/reports/delivery-funnel.tsx` — funnel visualization
+- `apps/web/src/components/reports/engagement-chart.tsx` — Recharts BarChart for channel comparison (Email vs WhatsApp)
+- `apps/web/src/components/reports/delivery-funnel.tsx` — funnel visualization (Sent → Delivered → Opened → Clicked)
+- `apps/web/src/components/reports/failure-reasons-list.tsx` — ordered failure breakdown:
+  - Hard bounces (count)
+  - Spam complaints (count)
+  - Invalid address (count)
+  - Values from `GET /api/v1/campaigns/:id/reports` → `failureBreakdown`
+  - Empty state: "No delivery failures" with success icon when all counts are 0
 
 **Acceptance criteria:**
 - [ ] Table sortable by open rate
 - [ ] Chart filters by date range (7d/30d/90d)
 - [ ] Empty state when no campaign has been sent
+- [ ] Failure reasons list shown below delivery funnel
+- [ ] Failure counts match API `failureBreakdown` values
+- [ ] Hard bounce count = 0 shows "0" not blank
 
 **Changelog:** `logs/frontend/7.6-reports-screen_DDMMYYHHSS.md`
 
@@ -911,11 +1068,23 @@ Node types: Trigger, Segment Check, Wait, Condition Split, Send Email, Send What
 - `apps/web/src/app/(plugin)/settings/page.tsx`
 - `apps/web/src/components/settings/channel-config-form.tsx` — per-channel config form with masked credential inputs, save button, health check trigger
 - `apps/web/src/components/settings/health-status-badge.tsx` — healthy/degraded/down indicator with timestamp
+- `apps/web/src/components/settings/domain-verification-table.tsx` — SPF/DKIM/DMARC domain verification table:
+  - Columns: Domain, SPF, DKIM, DMARC, Score (0–100), Action
+  - Status chips per cell: Pass (green), Fail (red), Partial (orange), Missing (gray)
+  - Score: integer colored ≥80 green / 60-79 orange / <60 red
+  - Action button: "Details" for passing rows (modal with DNS record), "Fix" for Fail/Missing rows (links to DNS guide)
+  - "Add domain" button → Input modal → calls `POST /api/v1/settings/domains/:domain/verify`
+  - "Verify" icon button per row → calls `POST /verify` → refreshes that row
 
 **Acceptance criteria:**
 - [ ] Credential inputs are `type="password"` with show/hide toggle
 - [ ] Save succeeds → success toast; error → inline error message
 - [ ] Health check button triggers GET /health and updates status badge
+- [ ] Domain table shows SPF/DKIM/DMARC chip per column for each domain
+- [ ] Score shown as integer (0-100) with correct color coding
+- [ ] "Fix" button appears only for rows with Fail or Missing status
+- [ ] "Add domain" modal validates hostname format before submit
+- [ ] Verify button shows loading spinner while DNS check in progress
 
 **Changelog:** `logs/frontend/7.7-settings-screen_DDMMYYHHSS.md`
 
@@ -997,6 +1166,25 @@ File contents follow `logs/LOG-TEMPLATE.md` exactly. Status flow: `PENDING → I
 
 ---
 
+## Design Delta — Changes Applied 2026-04-18
+
+This plan was updated based on `project/design/Campaign Builder — Engage Plugin.html` revision:
+
+| # | What changed | Affected tasks |
+|---|---|---|
+| 1 | Navy color token `#1A3C6B` → `#1B4DFF` (design HTML overrides PRD) | 6.1, Arch Snapshot |
+| 2 | Campaign types expanded to 6 (+ Transactional, Journey, API-triggered) | 1.3, 5.1, 5.2, 7.4 |
+| 3 | Step 1 new fields: description, workspace, folder, owner, A/B toggle, Starting Templates | 1.3, 5.2, 7.4 |
+| 4 | Step 4 new sections: UTM params, A/B test config, Throttling preview | 1.3, 5.2, 7.4 |
+| 5 | Campaign versioning: `version INT` + publish increments + "Publish v4" UI | 1.3, 5.2, 7.4 |
+| 6 | Reports: failureBreakdown (hardBounce, spamComplaint, invalidAddress) | 5.2, 7.6 |
+| 7 | Settings: SPF/DKIM/DMARC domain verification table | 7.7 |
+| 8 | New Task 5.4: DomainVerificationService using `dns.promises` + Redis cache | 5.4 (new) |
+| 9 | All CSS vars updated to match design HTML exactly | 6.1 |
+| 10 | Zod schemas updated for all new Step 1 + Step 4 fields | 7.4 |
+
+---
+
 ## Skill Self-Audit
 
 ```yaml
@@ -1010,4 +1198,6 @@ writing_plans_audit:
   dependencies_explicit: true
   handoffs_identified: true
   overall: plan_ready
+  last_updated: 2026-04-18
+  updated_reason: design-html-delta-10-changes
 ```

@@ -1,13 +1,27 @@
 {
-  "name": "launchpad-boilerplate",
-  "version": "1.0.0",
+  "name": "campaign-builder",
+  "version": "0.1.0",
   "private": true,
-  "description": "Claude Code-powered project boilerplate. Stack-agnostic — configure via project/TECH-STACK.md.",
   "scripts": {
-    "setup": "make setup",
-    "dev": "make dev",
-    "test": "make test",
-    "build": "make build",
-    "lint": "make lint"
+    "dev": "pnpm --filter @campaign/api dev & pnpm --filter @campaign/web dev",
+    "dev:infra": "docker compose -f infra/docker-compose.yml up -d",
+    "build": "pnpm --filter @campaign/api build && pnpm --filter @campaign/web build",
+    "type-check": "tsc -b",
+    "lint": "pnpm --filter '*' lint",
+    "test": "pnpm --filter @campaign/api test && pnpm --filter @campaign/web test",
+    "migrate": "pnpm --filter @campaign/api migration:run",
+    "migrate:test": "cross-env DATABASE_URL=postgresql://postgres:postgres@localhost:5433/campaign_test pnpm --filter @campaign/api migration:run"
+  },
+  "devDependencies": {
+    "typescript": "^5.3.3",
+    "cross-env": "^7.0.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@nestjs/core",
+      "esbuild",
+      "msgpackr-extract",
+      "unrs-resolver"
+    ]
   }
 }

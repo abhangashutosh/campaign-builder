@@ -1,0 +1,853 @@
+{
+  "info": {
+    "_postman_id": "campaign-builder-001",
+    "name": "Campaign Builder API",
+    "description": "Complete API collection for Campaign Builder plugin",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "contactId", "value": "" },
+    { "key": "segmentId", "value": "" },
+    { "key": "templateId", "value": "" },
+    { "key": "campaignId", "value": "" },
+    { "key": "journeyId", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('DB ok', () => pm.expect(b.status).to.eql('ok'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Contacts",
+      "item": [
+        {
+          "name": "Bulk Upsert Contacts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));",
+                  "if (b.data && b.data.length) pm.collectionVariables.set('contactId', b.data[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"contacts\":[{\"externalId\":\"user-001\",\"email\":\"user@example.com\",\"firstName\":\"John\",\"consentEmail\":true}]}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["contacts"]
+            }
+          }
+        },
+        {
+          "name": "List Contacts",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/contacts",
+              "host": ["{{baseUrl}}"],
+              "path": ["contacts"]
+            }
+          }
+        },
+        {
+          "name": "Update Consent",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"consentEmail\":false}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/contacts/{{contactId}}/consent",
+              "host": ["{{baseUrl}}"],
+              "path": ["contacts", "{{contactId}}", "consent"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Segments",
+      "item": [
+        {
+          "name": "Create Segment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));",
+                  "if (b.data && b.data.id) pm.collectionVariables.set('segmentId', b.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Active Users\",\"rules\":{\"include\":[{\"logic\":\"AND\",\"conditions\":[{\"field\":\"lifecycle_stage\",\"op\":\"eq\",\"value\":\"customer\"}]}],\"exclude\":[]}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/segments",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments"]
+            }
+          }
+        },
+        {
+          "name": "List Segments",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments"]
+            }
+          }
+        },
+        {
+          "name": "Get Segment",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/{{segmentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "{{segmentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Segment Estimate",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));",
+                  "pm.test('has total', () => pm.expect(b.data).to.have.property('total'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/segments/{{segmentId}}/estimate",
+              "host": ["{{baseUrl}}"],
+              "path": ["segments", "{{segmentId}}", "estimate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Templates",
+      "item": [
+        {
+          "name": "Create Template",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));",
+                  "if (b.data && b.data.id) pm.collectionVariables.set('templateId', b.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Welcome Email\",\"type\":\"email\",\"subject\":\"Welcome to {{product}}!\",\"htmlBody\":\"<p>Hello {{first_name}}</p>\",\"variables\":[\"product\",\"first_name\"],\"category\":\"marketing\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["templates"]
+            }
+          }
+        },
+        {
+          "name": "List Templates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["templates"]
+            }
+          }
+        },
+        {
+          "name": "Get Template",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/templates/{{templateId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["templates", "{{templateId}}"]
+            }
+          }
+        },
+        {
+          "name": "Approve Template",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PATCH",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/templates/{{templateId}}/approve",
+              "host": ["{{baseUrl}}"],
+              "path": ["templates", "{{templateId}}", "approve"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Campaigns",
+      "item": [
+        {
+          "name": "Create Campaign",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));",
+                  "if (b.data && b.data.id) pm.collectionVariables.set('campaignId', b.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Summer Re-engagement\",\"type\":\"one_time\",\"channels\":[\"email\"],\"createdBy\":\"owner@example.com\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns"]
+            }
+          }
+        },
+        {
+          "name": "List Campaigns",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns"]
+            }
+          }
+        },
+        {
+          "name": "Get Campaign",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/{{campaignId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns", "{{campaignId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Campaign",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"audienceSegmentId\":\"{{segmentId}}\",\"templateId\":\"{{templateId}}\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/{{campaignId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns", "{{campaignId}}"]
+            }
+          }
+        },
+        {
+          "name": "Campaign Readiness",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));",
+                  "pm.test('has score', () => pm.expect(b.data).to.have.property('score'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/{{campaignId}}/readiness",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns", "{{campaignId}}", "readiness"]
+            }
+          }
+        },
+        {
+          "name": "Publish Campaign",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 202, 400]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/{{campaignId}}/publish",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns", "{{campaignId}}", "publish"]
+            }
+          }
+        },
+        {
+          "name": "Pause Campaign",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/{{campaignId}}/pause",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns", "{{campaignId}}", "pause"]
+            }
+          }
+        },
+        {
+          "name": "Campaign Reports",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));",
+                  "pm.test('has failureBreakdown', () => pm.expect(b.data).to.have.property('failureBreakdown'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns/{{campaignId}}/reports",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns", "{{campaignId}}", "reports"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Journeys",
+      "item": [
+        {
+          "name": "Create Journey",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));",
+                  "if (b.data && b.data.id) pm.collectionVariables.set('journeyId', b.data.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"name\":\"Onboarding Journey\",\"nodes\":[],\"entryTrigger\":{\"event\":\"user_signup\"}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/journeys",
+              "host": ["{{baseUrl}}"],
+              "path": ["journeys"]
+            }
+          }
+        },
+        {
+          "name": "List Journeys",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/journeys",
+              "host": ["{{baseUrl}}"],
+              "path": ["journeys"]
+            }
+          }
+        },
+        {
+          "name": "Update Journey",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201, 202]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"status\":\"active\"}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/journeys/{{journeyId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["journeys", "{{journeyId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Settings",
+      "item": [
+        {
+          "name": "Upsert Email Config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "x-tenant-id", "value": "{{tenantId}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"provider\":\"resend\",\"credentials\":{\"apiKey\":\"re_test_key\",\"from\":\"sender@example.com\",\"domain\":\"example.com\"}}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/settings/channels/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["settings", "channels", "email"]
+            }
+          }
+        },
+        {
+          "name": "Get Email Config",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 404]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/settings/channels/email",
+              "host": ["{{baseUrl}}"],
+              "path": ["settings", "channels", "email"]
+            }
+          }
+        },
+        {
+          "name": "List Domains",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/settings/domains",
+              "host": ["{{baseUrl}}"],
+              "path": ["settings", "domains"]
+            }
+          }
+        },
+        {
+          "name": "Verify Domain",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 2xx', () => pm.expect(pm.response.code).to.be.oneOf([200, 201]));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/settings/domains/example.com/verify",
+              "host": ["{{baseUrl}}"],
+              "path": ["settings", "domains", "example.com", "verify"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Overview",
+      "item": [
+        {
+          "name": "Overview — All Campaigns",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Status 200', () => pm.response.to.have.status(200));",
+                  "const b = pm.response.json();",
+                  "pm.test('success true', () => pm.expect(b.success).to.be.true);",
+                  "pm.test('requestId exists', () => pm.expect(b.meta.requestId).to.match(/^[0-9a-f-]{36}$/i));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "x-tenant-id", "value": "{{tenantId}}" }],
+            "url": {
+              "raw": "{{baseUrl}}/campaigns",
+              "host": ["{{baseUrl}}"],
+              "path": ["campaigns"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

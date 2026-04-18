@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<!-- saved from url=(0230)file:///Users/apple/Library/Application%20Support/Claude/local-agent-mode-sessions/e8f63828-420b-475c-b744-e6cc1aaabf1e/6b1f136a-56f1-4dba-960b-9e271a27b29b/local_54a13683-1e53-4fc7-9628-429bbac77913/outputs/campaign-builder.html# -->
+<!-- saved from url=(0229)file:///Users/apple/Library/Application%20Support/Claude/local-agent-mode-sessions/e8f63828-420b-475c-b744-e6cc1aaabf1e/6b1f136a-56f1-4dba-960b-9e271a27b29b/local_54a13683-1e53-4fc7-9628-429bbac77913/outputs/campaign-builder.html -->
 <html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -12,10 +12,10 @@
    DESIGN TOKENS
    =========================================================== */
 :root{
-  --navy:#1A3C6B;
-  --navy-700:#17365F;
-  --navy-800:#12304F;
-  --navy-50:#EEF3FA;
+  --navy:#1B4DFF;
+  --navy-700:#1640D6;
+  --navy-800:#0E30A8;
+  --navy-50:#EEF2FF;
   --orange:#E85D04;
   --orange-50:#FFF1E6;
   --teal:#00C9A7;
@@ -277,7 +277,7 @@ hr{border:none;border-top:1px solid var(--border);margin:0}
 .chip .d{width:6px;height:6px;border-radius:50%;background:var(--muted)}
 .chip.running{background:var(--success-50);color:#166534;border-color:#BBF7D0}
 .chip.running .d{background:var(--success)}
-.chip.scheduled{background:var(--navy-50);color:var(--navy);border-color:#C7D7EA}
+.chip.scheduled{background:var(--navy-50);color:var(--navy);border-color:#C7D0FF}
 .chip.scheduled .d{background:var(--navy)}
 .chip.draft{background:#F1F5F9;color:var(--text-2);border-color:var(--border)}
 .chip.draft .d{background:var(--muted)}
@@ -369,6 +369,238 @@ hr{border:none;border-top:1px solid var(--border);margin:0}
 .step-title{font-size:12px;font-weight:600;margin-top:2px}
 .step.active .step-title{color:var(--navy)}
 .step-meta{font-size:11px;color:var(--text-3);margin-top:2px}
+.stepper .step{cursor:pointer;user-select:none;transition:background .12s}
+.stepper .step:hover{background:var(--hover)}
+.stepper .step.active:hover{background:transparent}
+
+/* Step panels (1-5) */
+.step-panels > .step-panel{display:none}
+.step-panels > .step-panel.active{display:block}
+.step-panels{display:flex;flex-direction:column}
+
+/* Step 1 — Campaign Type specific */
+.objective-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.obj-card{
+  position:relative;
+  border:1px solid var(--border);
+  border-radius:var(--radius-lg);
+  padding:14px;
+  background:var(--surface);
+  cursor:pointer;
+  transition:border-color .12s, background .12s;
+  display:flex;flex-direction:column;gap:6px;
+}
+.obj-card:hover{background:var(--hover)}
+.obj-card.on{border-color:var(--navy);background:var(--navy-50)}
+.obj-card .icon{
+  width:32px;height:32px;border-radius:var(--radius-md);
+  background:var(--bg);display:grid;place-items:center;color:var(--navy);
+  margin-bottom:4px;
+}
+.obj-card.on .icon{background:#fff;color:var(--navy)}
+.obj-card .t{font-size:13px;font-weight:600;color:var(--text)}
+.obj-card.on .t{color:var(--navy)}
+.obj-card .d{font-size:11px;color:var(--text-3);line-height:1.45}
+.obj-card .tick{
+  position:absolute;top:10px;right:10px;
+  width:16px;height:16px;border-radius:50%;
+  background:var(--navy);color:#fff;display:none;place-items:center;
+  font-size:10px;
+}
+.obj-card.on .tick{display:grid}
+
+.channel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.ch-card{
+  border:1px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:10px 12px;
+  background:var(--surface);
+  display:flex;align-items:center;gap:10px;
+  cursor:pointer;
+  transition:border-color .12s, background .12s;
+}
+.ch-card:hover{background:var(--hover)}
+.ch-card.on{border-color:var(--navy);background:var(--navy-50)}
+.ch-card .ch-icon{
+  width:28px;height:28px;border-radius:var(--radius-md);
+  display:grid;place-items:center;flex-shrink:0;
+}
+.ch-card .ch-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.2}
+.ch-card .ch-meta{font-size:10px;color:var(--text-3);margin-top:1px}
+.ch-card .ch-tog{margin-left:auto}
+
+.template-gallery{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tpl-card{
+  border:1px solid var(--border);border-radius:var(--radius-md);
+  background:var(--surface);overflow:hidden;cursor:pointer;
+  display:flex;flex-direction:column;
+}
+.tpl-card:hover{border-color:var(--navy)}
+.tpl-card.on{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy-50)}
+.tpl-thumb{height:92px;background:var(--bg);position:relative;display:grid;place-items:center}
+.tpl-thumb .mini-email{
+  width:78px;height:64px;background:#fff;border-radius:4px;
+  box-shadow:var(--shadow-sm);padding:6px;display:flex;flex-direction:column;gap:3px;
+  border:1px solid var(--border-2);
+}
+.tpl-thumb .mini-email .h{height:8px;background:var(--navy);border-radius:2px;width:60%}
+.tpl-thumb .mini-email .l{height:3px;background:var(--border);border-radius:2px;width:100%}
+.tpl-thumb .mini-email .l.s{width:80%}
+.tpl-thumb .mini-email .l.c{width:40%;background:var(--orange);height:5px;margin-top:auto}
+.tpl-meta{padding:10px}
+.tpl-meta .n{font-size:12px;font-weight:600;line-height:1.2}
+.tpl-meta .d{font-size:10px;color:var(--text-3);margin-top:3px}
+.tpl-meta .tags{display:flex;gap:4px;margin-top:6px;flex-wrap:wrap}
+.tpl-meta .tags span{font-size:9px;background:var(--bg);color:var(--text-3);padding:1px 5px;border-radius:3px}
+
+/* Step 2 — Audience specific */
+.rule-card{
+  border:1px solid var(--border);border-radius:var(--radius-md);
+  background:var(--surface);
+}
+.rule-card .rc-head{
+  padding:8px 10px;border-bottom:1px solid var(--border-2);
+  display:flex;align-items:center;gap:8px;
+  font-size:11px;font-weight:600;color:var(--text-2);
+  background:var(--bg);
+}
+.rule-card .rc-head .op{font-size:10px;color:var(--navy);background:var(--navy-50);padding:2px 6px;border-radius:3px;font-weight:600}
+.rule-card .rc-body{padding:10px;display:flex;flex-direction:column;gap:8px}
+.rule-row{display:flex;gap:6px;align-items:center;font-size:12px}
+.rule-row .select,.rule-row .input{height:28px}
+.rule-row .small{flex:0 0 auto;width:auto;min-width:90px}
+
+.rule-bool{
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:var(--text-3);
+  text-transform:uppercase;letter-spacing:.05em;
+  padding:3px 0;
+}
+.rule-bool::before,.rule-bool::after{
+  content:"";flex:1;height:1px;background:var(--border);margin:0 8px;
+}
+
+.reach-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-2)}
+.reach-row:last-child{border:none}
+.reach-row .rn{font-size:11px;font-weight:600;color:var(--text-2);width:90px;display:flex;align-items:center;gap:6px}
+.reach-row .rb{flex:1;height:6px;background:var(--bg);border-radius:3px;overflow:hidden;position:relative}
+.reach-row .rb > span{display:block;height:100%;border-radius:3px}
+.reach-row .rv{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--text);width:80px;text-align:right}
+
+.sample-user{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;border-bottom:1px solid var(--border-2);font-size:11px;
+}
+.sample-user:last-child{border:none}
+.sample-user .av{width:24px;height:24px;border-radius:50%;background:var(--navy-50);color:var(--navy);display:grid;place-items:center;font-size:10px;font-weight:600;flex-shrink:0}
+.sample-user .info{min-width:0;flex:1}
+.sample-user .info .n{font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sample-user .info .e{font-size:10px;color:var(--text-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sample-user .meta{font-size:10px;color:var(--text-3);text-align:right;flex-shrink:0}
+
+.donut{
+  --pct:72; width:120px;height:120px;border-radius:50%;
+  background:conic-gradient(var(--navy) calc(var(--pct) * 1%), var(--border-2) 0);
+  display:grid;place-items:center;position:relative;
+}
+.donut::after{
+  content:"";position:absolute;inset:14px;background:#fff;border-radius:50%;
+}
+.donut .inner{position:relative;z-index:1;text-align:center}
+.donut .big{font-size:22px;font-weight:700;color:var(--text);letter-spacing:-0.02em}
+.donut .sm{font-size:10px;color:var(--text-3);margin-top:-2px}
+
+/* Step 4 — Delivery Rules specific */
+.send-mode{display:flex;flex-direction:column;gap:6px}
+.mode-card{
+  border:1px solid var(--border);border-radius:var(--radius-md);
+  padding:10px 12px;background:var(--surface);
+  display:flex;align-items:center;gap:10px;cursor:pointer;
+  transition:border-color .12s, background .12s;
+}
+.mode-card:hover{background:var(--hover)}
+.mode-card.on{border-color:var(--navy);background:var(--navy-50)}
+.mode-card .radio{
+  width:16px;height:16px;border-radius:50%;border:1.5px solid var(--border);
+  display:grid;place-items:center;flex-shrink:0;background:#fff;
+}
+.mode-card.on .radio{border-color:var(--navy)}
+.mode-card.on .radio::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--navy)}
+.mode-card .mc-txt{flex:1;min-width:0}
+.mode-card .mc-name{font-size:12px;font-weight:600;color:var(--text);line-height:1.2}
+.mode-card .mc-sub{font-size:10px;color:var(--text-3);margin-top:2px}
+.mode-card .mc-tag{font-size:9px;font-weight:600;padding:2px 5px;border-radius:3px;background:var(--bg);color:var(--text-2);letter-spacing:.03em}
+
+.heatmap{
+  display:grid;grid-template-columns:32px repeat(24, 1fr);gap:1px;
+  background:var(--border-2);padding:1px;border-radius:var(--radius-md);
+  font-size:9px;
+}
+.heatmap .hm-h{background:#fff;color:var(--text-3);text-align:center;padding:2px 0;font-size:8px;font-weight:600}
+.heatmap .hm-d{background:#fff;color:var(--text-3);padding:0 4px;text-align:right;font-size:9px;font-weight:600;display:grid;place-items:center}
+.heatmap .hm-c{background:#fff;aspect-ratio:1;min-height:12px}
+
+.utm-row{display:grid;grid-template-columns:110px 1fr;gap:8px;align-items:center;padding:6px 0;border-bottom:1px solid var(--border-2)}
+.utm-row:last-child{border:none}
+.utm-row label{font-size:11px;color:var(--text-2);font-weight:500}
+.utm-row .input{height:28px;font-family:'JetBrains Mono',monospace;font-size:11px}
+
+.variant-row{
+  display:grid;grid-template-columns:40px 1fr 60px 60px;gap:10px;
+  padding:10px;border-bottom:1px solid var(--border-2);align-items:center;
+  font-size:11px;
+}
+.variant-row:last-child{border:none}
+.variant-row .vlabel{
+  width:28px;height:28px;border-radius:6px;background:var(--navy);color:#fff;
+  display:grid;place-items:center;font-weight:700;font-size:12px;
+}
+.variant-row .vlabel.b{background:var(--orange)}
+.variant-row .vlabel.c{background:var(--teal);color:#fff}
+.variant-row .vname{font-weight:600;color:var(--text)}
+.variant-row .vsub{font-size:10px;color:var(--text-3);margin-top:2px}
+.variant-row .vpct{font-family:'JetBrains Mono',monospace;font-size:11px;text-align:right;font-weight:600}
+
+/* Step 5 — Review & Publish specific */
+.summary-card{
+  border:1px solid var(--border);border-radius:var(--radius-md);
+  background:var(--surface);
+}
+.summary-card .sc-head{
+  display:flex;align-items:center;gap:8px;padding:10px 12px;
+  border-bottom:1px solid var(--border-2);background:var(--bg);
+}
+.summary-card .sc-head .sc-num{
+  width:20px;height:20px;border-radius:50%;
+  background:var(--success-50);color:var(--success);
+  display:grid;place-items:center;font-size:10px;font-weight:700;
+  flex-shrink:0;
+}
+.summary-card .sc-head .sc-title{font-size:12px;font-weight:600;color:var(--text);flex:1}
+.summary-card .sc-head .sc-edit{font-size:11px;color:var(--navy);font-weight:500;cursor:pointer}
+.summary-card .sc-body{padding:10px 12px;display:grid;grid-template-columns:130px 1fr;gap:6px 14px;font-size:12px}
+.summary-card .sc-body .k{color:var(--text-3);font-size:11px}
+.summary-card .sc-body .v{color:var(--text);font-weight:500}
+
+.approver-row{
+  display:flex;align-items:center;gap:10px;padding:8px 10px;
+  border-bottom:1px solid var(--border-2);font-size:11px;
+}
+.approver-row:last-child{border:none}
+.approver-row .av-sm{width:22px;height:22px;border-radius:50%;background:var(--navy-50);color:var(--navy);display:grid;place-items:center;font-size:9px;font-weight:700;flex-shrink:0}
+.approver-row .info{flex:1;min-width:0}
+.approver-row .info .n{font-size:11px;font-weight:600;color:var(--text)}
+.approver-row .info .r{font-size:10px;color:var(--text-3)}
+
+.launch-btn{
+  display:flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 16px;background:var(--navy);color:#fff;
+  border-radius:var(--radius-md);font-size:13px;font-weight:600;
+  border:none;cursor:pointer;width:100%;
+  transition:background .12s;
+}
+.launch-btn:hover{background:var(--navy-700)}
+.launch-btn.alt{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+.launch-btn.alt:hover{background:var(--navy-50)}
 
 /* ===========================================================
    BUILDER LAYOUT (3-column)
@@ -993,16 +1225,16 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
     <div class="nav-section">
       <div class="nav-label">Workspace</div>
       <nav class="nav">
-        <a data-screen="overview" onclick="showScreen(&#39;overview&#39;)" class="">
+        <a data-screen="overview" onclick="showScreen(&#39;overview&#39;)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
           Overview
         </a>
-        <a data-screen="segments" onclick="showScreen(&#39;segments&#39;)" class="">
+        <a data-screen="segments" onclick="showScreen(&#39;segments&#39;)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
           Audience
           <span class="count">34</span>
         </a>
-        <a data-screen="templates" onclick="showScreen(&#39;templates&#39;)" class="">
+        <a data-screen="templates" onclick="showScreen(&#39;templates&#39;)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18"></path><path d="M9 21V9"></path></svg>
           Templates
           <span class="count">127</span>
@@ -1012,11 +1244,11 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
           Campaigns
           <span class="badge">3</span>
         </a>
-        <a data-screen="journeys" onclick="showScreen(&#39;journeys&#39;)" class="">
+        <a data-screen="journeys" onclick="showScreen(&#39;journeys&#39;)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="6" cy="6" r="3"></circle><circle cx="18" cy="18" r="3"></circle><path d="M9 6h6a3 3 0 0 1 3 3v3"></path><path d="M15 18H9a3 3 0 0 1-3-3v-3"></path></svg>
           Journeys
         </a>
-        <a data-screen="reports" onclick="showScreen(&#39;reports&#39;)" class="">
+        <a data-screen="reports" onclick="showScreen(&#39;reports&#39;)">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M7 15l4-4 4 4 6-6"></path></svg>
           Reports
         </a>
@@ -1099,36 +1331,32 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
       </div>
 
       <!-- Stepper -->
-      <div class="stepper">
-        <div class="step done">
-          <div class="step-num">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          </div>
+      <div class="stepper" id="cbStepper">
+        <div class="step active" data-step="1" onclick="showStep(1)">
+          <div class="step-num">1</div>
           <div class="step-text">
-            <div class="step-label">Step 1</div>
+            <div class="step-label">Step 1 · In progress</div>
             <div class="step-title">Campaign Type</div>
             <div class="step-meta">One-time · Email + WhatsApp</div>
           </div>
         </div>
-        <div class="step done">
-          <div class="step-num">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-          </div>
+        <div class="step" data-step="2" onclick="showStep(2)">
+          <div class="step-num">2</div>
           <div class="step-text">
             <div class="step-label">Step 2</div>
             <div class="step-title">Audience</div>
             <div class="step-meta">New Users · 7 day · 48,204 eligible</div>
           </div>
         </div>
-        <div class="step active">
+        <div class="step" data-step="3" onclick="showStep(3)">
           <div class="step-num">3</div>
           <div class="step-text">
-            <div class="step-label">Step 3 · In progress</div>
+            <div class="step-label">Step 3</div>
             <div class="step-title">Message</div>
             <div class="step-meta">Email + WhatsApp composing</div>
           </div>
         </div>
-        <div class="step">
+        <div class="step" data-step="4" onclick="showStep(4)">
           <div class="step-num">4</div>
           <div class="step-text">
             <div class="step-label">Step 4</div>
@@ -1136,7 +1364,7 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
             <div class="step-meta">Schedule, frequency, quiet hours</div>
           </div>
         </div>
-        <div class="step">
+        <div class="step" data-step="5" onclick="showStep(5)">
           <div class="step-num">5</div>
           <div class="step-text">
             <div class="step-label">Step 5</div>
@@ -1146,6 +1374,508 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
         </div>
       </div>
 
+      <!-- Step Panels Wrapper -->
+      <div class="step-panels" id="cbStepPanels">
+
+      <!-- ============ STEP 1 PANEL ============ -->
+      <div class="step-panel active" data-panel="1">
+        <div class="builder">
+
+          <!-- STEP 1: LEFT - Campaign Basics -->
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Campaign Basics</h3>
+                <div class="sub">Metadata, ownership, folder</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="field">
+                <label>Campaign Name <span class="req">*</span></label>
+                <input class="input" value="Welcome Series — October 2026">
+                <div class="hint">Shown in reports and audit log</div>
+              </div>
+              <div class="field">
+                <label>Internal Description</label>
+                <textarea class="input" rows="3" style="min-height:62px">First-touch activation email for new signups in the last 7 days. Promotes onboarding checklist completion to reduce day-7 churn.</textarea>
+              </div>
+              <div class="field">
+                <label>Workspace</label>
+                <select class="select">
+                  <option>Northwind · Production</option>
+                  <option>Northwind · Staging</option>
+                  <option>Sandbox</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Folder</label>
+                <select class="select">
+                  <option>Lifecycle / Onboarding</option>
+                  <option>Promotional / Q4 2026</option>
+                  <option>Transactional / Billing</option>
+                  <option>Winback</option>
+                </select>
+              </div>
+              <div class="field">
+                <label>Owner</label>
+                <div class="input-group">
+                  <div style="width:18px;height:18px;border-radius:50%;background:var(--navy-50);color:var(--navy);display:grid;place-items:center;font-size:9px;font-weight:700;flex-shrink:0">PK</div>
+                  <input value="Priya Kulkarni · Lifecycle">
+                </div>
+              </div>
+              <div class="field">
+                <label>Internal Tags</label>
+                <div class="tag-box">
+                  <span class="tag">lifecycle<button>×</button></span>
+                  <span class="tag">onboarding<button>×</button></span>
+                  <span class="tag">q4-2026<button>×</button></span>
+                  <input placeholder="+ add tag">
+                </div>
+              </div>
+              <div class="field">
+                <label style="display:flex;justify-content:space-between">
+                  <span>Run as A/B Test</span>
+                  <span class="switch" onclick="this.classList.toggle(&#39;on&#39;)"></span>
+                </label>
+                <div class="hint">Automatically split audience and compare winners</div>
+              </div>
+            </div>
+          </aside>
+
+          <!-- STEP 1: MIDDLE - Type & Channel -->
+          <section class="panel">
+            <div class="panel-head" style="justify-content:space-between">
+              <div>
+                <h3>Campaign Type &amp; Channels</h3>
+                <div class="sub">Objective determines scheduling, reporting and approvals</div>
+              </div>
+              <span class="pill navy" style="background:var(--navy-50);color:var(--navy);padding:3px 8px;font-size:10px;font-weight:600;border-radius:4px">1 of 3 configured</span>
+            </div>
+            <div class="panel-body" style="gap:20px">
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none;letter-spacing:0">Objective</label>
+                <div class="hint">How users will enter this campaign</div>
+                <div class="objective-grid" style="margin-top:6px">
+                  <div class="obj-card on">
+                    <div class="tick">✓</div>
+                    <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg></div>
+                    <div class="t">One-time</div>
+                    <div class="d">Send to a static audience on a schedule or immediately</div>
+                  </div>
+                  <div class="obj-card">
+                    <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 2l4 4-4 4"></path><path d="M3 11v-1a4 4 0 0 1 4-4h14"></path><path d="M7 22l-4-4 4-4"></path><path d="M21 13v1a4 4 0 0 1-4 4H3"></path></svg></div>
+                    <div class="t">Recurring</div>
+                    <div class="d">Daily, weekly or monthly cadence with end date</div>
+                  </div>
+                  <div class="obj-card">
+                    <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path></svg></div>
+                    <div class="t">Triggered</div>
+                    <div class="d">Fires when a user performs a tracked event</div>
+                  </div>
+                  <div class="obj-card">
+                    <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 9h18"></path></svg></div>
+                    <div class="t">Transactional</div>
+                    <div class="d">Receipts, OTPs, alerts — bypass marketing consent</div>
+                  </div>
+                  <div class="obj-card">
+                    <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="6" cy="6" r="3"></circle><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="12" r="3"></circle><path d="M9 6h6"></path><path d="M9 18h6"></path><path d="M12 8v8"></path></svg></div>
+                    <div class="t">Journey</div>
+                    <div class="d">Multi-step path with branches, waits and conditions</div>
+                  </div>
+                  <div class="obj-card">
+                    <div class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="4" width="16" height="16" rx="2"></rect><path d="M9 9h6v6H9z"></path></svg></div>
+                    <div class="t">API-triggered</div>
+                    <div class="d">Send via REST API on demand from your backend</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none;letter-spacing:0">Channels</label>
+                <div class="hint">Select one or more. Email and WhatsApp are enabled for Northwind · Prod</div>
+                <div class="channel-grid" style="margin-top:6px">
+                  <div class="ch-card on">
+                    <div class="ch-icon" style="background:var(--navy);color:#fff"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg></div>
+                    <div><div class="ch-name">Email</div><div class="ch-meta">welcome-hero-v4</div></div>
+                    <span class="ch-tog switch on"></span>
+                  </div>
+                  <div class="ch-card on">
+                    <div class="ch-icon" style="background:#25D366;color:#fff"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20.5 3.5a11 11 0 0 0-17 13L2 22l5.5-1.5A11 11 0 1 0 20.5 3.5zM12 20a8 8 0 0 1-4.2-1.2l-.3-.2-3 .8.8-3-.2-.3a8 8 0 1 1 6.9 3.9zm4.5-6c-.3-.1-1.5-.7-1.7-.8-.2 0-.4-.1-.6.2s-.7.8-.8 1c-.2.1-.3.2-.5 0a6.5 6.5 0 0 1-3.2-2.8c-.2-.4.2-.4.6-1.3.1-.1 0-.3 0-.4-.1-.1-.6-1.3-.8-1.8-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.4-.2.3-.9.9-.9 2.2s.9 2.5 1 2.7c.2.2 1.8 2.7 4.4 3.7 2.6 1 2.6.6 3 .6s1.5-.6 1.7-1.2c.2-.6.2-1.1.2-1.2 0-.1-.2-.2-.5-.3z"></path></svg></div>
+                    <div><div class="ch-name">WhatsApp</div><div class="ch-meta">otp-and-marketing</div></div>
+                    <span class="ch-tog switch on"></span>
+                  </div>
+                  <div class="ch-card">
+                    <div class="ch-icon" style="background:var(--bg);color:var(--text-2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"></path></svg></div>
+                    <div><div class="ch-name">SMS</div><div class="ch-meta">Not provisioned</div></div>
+                    <span class="ch-tog switch"></span>
+                  </div>
+                  <div class="ch-card">
+                    <div class="ch-icon" style="background:var(--bg);color:var(--text-2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path><path d="M13.7 21a2 2 0 0 1-3.4 0"></path></svg></div>
+                    <div><div class="ch-name">Push</div><div class="ch-meta">Mobile only</div></div>
+                    <span class="ch-tog switch"></span>
+                  </div>
+                  <div class="ch-card">
+                    <div class="ch-icon" style="background:var(--bg);color:var(--text-2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"></rect><path d="M3 9h18"></path></svg></div>
+                    <div><div class="ch-name">In-app</div><div class="ch-meta">Native or web</div></div>
+                    <span class="ch-tog switch"></span>
+                  </div>
+                  <div class="ch-card">
+                    <div class="ch-icon" style="background:var(--bg);color:var(--text-2)"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20"></path><path d="M12 2a15 15 0 0 1 0 20"></path><path d="M12 2a15 15 0 0 0 0 20"></path></svg></div>
+                    <div><div class="ch-name">Web Push</div><div class="ch-meta">Chrome, Edge, Firefox</div></div>
+                    <span class="ch-tog switch"></span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none;letter-spacing:0">Starting template</label>
+                <div class="hint">Pick a template or start blank. Templates pre-fill audience, message and delivery rules</div>
+                <div class="template-gallery" style="margin-top:6px">
+                  <div class="tpl-card on">
+                    <div class="tpl-thumb"><div class="mini-email"><div class="h"></div><div class="l"></div><div class="l s"></div><div class="l"></div><div class="l c"></div></div></div>
+                    <div class="tpl-meta">
+                      <div class="n">Welcome Series</div>
+                      <div class="d">First-touch activation email</div>
+                      <div class="tags"><span>Lifecycle</span><span>Activation</span></div>
+                    </div>
+                  </div>
+                  <div class="tpl-card">
+                    <div class="tpl-thumb"><div class="mini-email"><div class="h" style="background:var(--orange);width:40%"></div><div class="l"></div><div class="l"></div><div class="l s"></div><div class="l c"></div></div></div>
+                    <div class="tpl-meta">
+                      <div class="n">Cart Abandonment</div>
+                      <div class="d">Trigger 1h after cart abandon</div>
+                      <div class="tags"><span>Ecommerce</span></div>
+                    </div>
+                  </div>
+                  <div class="tpl-card">
+                    <div class="tpl-thumb"><div class="mini-email"><div class="h" style="background:var(--teal);width:70%"></div><div class="l"></div><div class="l s"></div><div class="l c" style="background:var(--navy)"></div></div></div>
+                    <div class="tpl-meta">
+                      <div class="n">Re-engagement</div>
+                      <div class="d">Win back dormant users</div>
+                      <div class="tags"><span>Winback</span></div>
+                    </div>
+                  </div>
+                  <div class="tpl-card">
+                    <div class="tpl-thumb" style="background:repeating-linear-gradient(45deg,var(--bg),var(--bg) 6px,#eef 6px,#eef 12px)"><div style="font-size:10px;color:var(--text-3);font-weight:500">Blank canvas</div></div>
+                    <div class="tpl-meta">
+                      <div class="n">Start from scratch</div>
+                      <div class="d">Empty email template</div>
+                      <div class="tags"><span>Custom</span></div>
+                    </div>
+                  </div>
+                  <div class="tpl-card">
+                    <div class="tpl-thumb"><div class="mini-email"><div class="h" style="width:50%"></div><div class="l"></div><div class="l s"></div><div class="l" style="width:60%"></div><div class="l c" style="background:var(--success)"></div></div></div>
+                    <div class="tpl-meta">
+                      <div class="n">Transactional Receipt</div>
+                      <div class="d">Purchase / billing confirmation</div>
+                      <div class="tags"><span>Transactional</span></div>
+                    </div>
+                  </div>
+                  <div class="tpl-card">
+                    <div class="tpl-thumb"><div class="mini-email"><div class="h" style="background:var(--orange);width:80%"></div><div class="l"></div><div class="l"></div><div class="l s"></div><div class="l c" style="background:var(--orange)"></div></div></div>
+                    <div class="tpl-meta">
+                      <div class="n">Promotional Blast</div>
+                      <div class="d">Sale announcement + CTA</div>
+                      <div class="tags"><span>Promo</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- STEP 1: RIGHT - Guidance -->
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Setup Guide</h3>
+                <div class="sub">Based on your selections</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div style="display:flex;align-items:center;gap:10px;padding:10px;background:var(--navy-50);border-radius:var(--radius-md)">
+                <div style="width:32px;height:32px;border-radius:50%;background:#fff;display:grid;place-items:center;color:var(--navy);font-weight:700;font-size:14px;flex-shrink:0">1</div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:var(--navy)">One-time · Email + WhatsApp</div>
+                  <div style="font-size:10px;color:var(--text-2);margin-top:2px;line-height:1.4">A single sendable batch to a snapshot audience</div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="text-transform:uppercase;font-size:10px;letter-spacing:.06em;color:var(--text-3)">Next you'll configure</label>
+                <div style="display:flex;flex-direction:column;gap:6px;margin-top:2px">
+                  <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-2)">
+                    <div style="width:18px;height:18px;border-radius:50%;background:var(--bg);color:var(--text-3);display:grid;place-items:center;font-size:10px;font-weight:600;flex-shrink:0">2</div>
+                    <div><div style="font-size:11px;font-weight:600">Audience</div><div style="font-size:10px;color:var(--text-3);line-height:1.4">Who receives this campaign</div></div>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-2)">
+                    <div style="width:18px;height:18px;border-radius:50%;background:var(--bg);color:var(--text-3);display:grid;place-items:center;font-size:10px;font-weight:600;flex-shrink:0">3</div>
+                    <div><div style="font-size:11px;font-weight:600">Message</div><div style="font-size:10px;color:var(--text-3);line-height:1.4">Email body + WhatsApp payload</div></div>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:1px solid var(--border-2)">
+                    <div style="width:18px;height:18px;border-radius:50%;background:var(--bg);color:var(--text-3);display:grid;place-items:center;font-size:10px;font-weight:600;flex-shrink:0">4</div>
+                    <div><div style="font-size:11px;font-weight:600">Delivery</div><div style="font-size:10px;color:var(--text-3);line-height:1.4">Schedule, cap, quiet hours</div></div>
+                  </div>
+                  <div style="display:flex;align-items:flex-start;gap:8px;padding:8px 0">
+                    <div style="width:18px;height:18px;border-radius:50%;background:var(--bg);color:var(--text-3);display:grid;place-items:center;font-size:10px;font-weight:600;flex-shrink:0">5</div>
+                    <div><div style="font-size:11px;font-weight:600">Review</div><div style="font-size:10px;color:var(--text-3);line-height:1.4">Validate + publish</div></div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="padding:10px 12px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-2)">
+                <div style="font-size:11px;font-weight:600;display:flex;align-items:center;gap:6px;margin-bottom:6px">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M12 2l3 7h7l-5.5 4 2 7-6.5-4.5L5 20l2-7-5.5-4h7z"></path></svg>
+                  Recommended
+                </div>
+                <div style="font-size:11px;color:var(--text-2);line-height:1.5">Pair Email with WhatsApp fallback: Email first, then WhatsApp nudge after 48h for non-openers. Lifts conversion ~2.1× vs Email only.</div>
+              </div>
+
+              <div style="margin-top:auto;display:flex;gap:6px">
+                <button class="btn sm" style="flex:1">Save Draft</button>
+                <button class="btn sm primary" style="flex:1" onclick="showStep(2)">Next: Audience →</button>
+              </div>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+
+      <!-- ============ STEP 2 PANEL ============ -->
+      <div class="step-panel" data-panel="2">
+        <div class="builder">
+
+          <!-- STEP 2: LEFT - Audience Builder -->
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Audience Builder</h3>
+                <div class="sub">Include &amp; exclude rules</div>
+              </div>
+            </div>
+            <div class="panel-body">
+
+              <div class="segmented" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr">
+                <button class="on">Segment</button>
+                <button>Live filter</button>
+                <button>User list</button>
+              </div>
+
+              <div class="field">
+                <label>Base Segment <span class="req">*</span></label>
+                <div class="input-group">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M2 12h20"></path></svg>
+                  <input value="New users · last 7 days">
+                  <span class="suffix">48,204</span>
+                </div>
+                <div class="hint">Live segment · recalculates every 15 min</div>
+              </div>
+
+              <div class="field">
+                <label style="display:flex;justify-content:space-between">
+                  <span style="color:var(--success);text-transform:uppercase;font-size:10px;letter-spacing:.06em">Include</span>
+                  <span style="color:var(--text-3);font-size:10px">2 rules</span>
+                </label>
+                <div class="rule-card">
+                  <div class="rc-head">
+                    <span class="op">AND</span>
+                    <span>Did perform event</span>
+                    <span style="margin-left:auto;color:var(--text-3);cursor:pointer;font-size:14px">⋯</span>
+                  </div>
+                  <div class="rc-body">
+                    <div class="rule-row">
+                      <select class="select small"><option>Signed Up</option><option>Installed App</option></select>
+                      <span style="font-size:11px;color:var(--text-3)">in last</span>
+                      <input class="input" style="width:40px" value="7">
+                      <select class="select" style="width:70px"><option>days</option></select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="rule-bool">AND</div>
+
+                <div class="rule-card">
+                  <div class="rc-head">
+                    <span class="op">AND</span>
+                    <span>User property</span>
+                    <span style="margin-left:auto;color:var(--text-3);cursor:pointer;font-size:14px">⋯</span>
+                  </div>
+                  <div class="rc-body">
+                    <div class="rule-row">
+                      <select class="select small"><option>country</option></select>
+                      <select class="select" style="width:60px"><option>in</option></select>
+                    </div>
+                    <div class="tag-box" style="min-height:auto">
+                      <span class="tag">US<button>×</button></span>
+                      <span class="tag">CA<button>×</button></span>
+                      <span class="tag">UK<button>×</button></span>
+                      <span class="tag">IN<button>×</button></span>
+                      <input placeholder="+">
+                    </div>
+                  </div>
+                </div>
+
+                <button class="btn sm" style="margin-top:6px;width:100%;justify-content:center">+ Add include rule</button>
+              </div>
+
+              <div class="field">
+                <label style="display:flex;justify-content:space-between">
+                  <span style="color:var(--danger);text-transform:uppercase;font-size:10px;letter-spacing:.06em">Exclude</span>
+                  <span style="color:var(--text-3);font-size:10px">3 rules</span>
+                </label>
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--danger-50);border:1px solid #FCDCDC;border-radius:var(--radius-md)">
+                    <span class="checkbox on" style="background:var(--danger);border-color:var(--danger)"></span>
+                    <div style="flex:1"><div style="font-size:11px;font-weight:600">Unsubscribed from Marketing</div><div style="font-size:10px;color:var(--text-3)">~1,842 users</div></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--danger-50);border:1px solid #FCDCDC;border-radius:var(--radius-md)">
+                    <span class="checkbox on" style="background:var(--danger);border-color:var(--danger)"></span>
+                    <div style="flex:1"><div style="font-size:11px;font-weight:600">Messaged in last 24h</div><div style="font-size:10px;color:var(--text-3)">Campaign frequency cap</div></div>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--danger-50);border:1px solid #FCDCDC;border-radius:var(--radius-md)">
+                    <span class="checkbox on" style="background:var(--danger);border-color:var(--danger)"></span>
+                    <div style="flex:1"><div style="font-size:11px;font-weight:600">Hard bounced emails</div><div style="font-size:10px;color:var(--text-3)">~412 users</div></div>
+                  </div>
+                </div>
+                <button class="btn sm" style="margin-top:6px;width:100%;justify-content:center">+ Add exclude rule</button>
+              </div>
+
+            </div>
+          </aside>
+
+          <!-- STEP 2: MIDDLE - Live Preview -->
+          <section class="panel">
+            <div class="panel-head" style="justify-content:space-between">
+              <div>
+                <h3>Live Audience Preview</h3>
+                <div class="sub">Computed just now · auto-refreshes every 15 min</div>
+              </div>
+              <button class="btn sm">↻ Refresh</button>
+            </div>
+            <div class="panel-body" style="gap:18px">
+
+              <div style="display:grid;grid-template-columns:auto 1fr;gap:24px;align-items:center;padding:14px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-2)">
+                <div class="donut" style="--pct:96">
+                  <div class="inner">
+                    <div class="big">46.4k</div>
+                    <div class="sm">reachable</div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:4px">
+                  <div style="font-size:11px;color:var(--text-3);text-transform:uppercase;letter-spacing:.06em;font-weight:600">Estimated Reach</div>
+                  <div style="font-size:22px;font-weight:700;letter-spacing:-0.02em">46,362 <span style="font-size:13px;font-weight:500;color:var(--text-3)">of 48,204</span></div>
+                  <div style="font-size:11px;color:var(--text-2);margin-top:2px">96.2% reachable · 1,842 excluded (consent) · 412 bounced</div>
+                  <div style="display:flex;gap:12px;margin-top:8px;font-size:11px">
+                    <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--navy);border-radius:50%"></span><strong>Email</strong> 46,362</span>
+                    <span style="display:flex;align-items:center;gap:4px"><span style="width:8px;height:8px;background:var(--teal);border-radius:50%"></span><strong>WhatsApp</strong> 33,420</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:11px;font-weight:600">Channel Reachability</label>
+                <div style="margin-top:4px">
+                  <div class="reach-row">
+                    <div class="rn"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--navy)" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg> Email</div>
+                    <div class="rb"><span style="width:96%;background:var(--navy)"></span></div>
+                    <div class="rv">46,362</div>
+                  </div>
+                  <div class="reach-row">
+                    <div class="rn"><svg width="12" height="12" viewBox="0 0 24 24" fill="#25D366"><path d="M20.5 3.5a11 11 0 0 0-17 13L2 22l5.5-1.5A11 11 0 1 0 20.5 3.5z"></path></svg> WhatsApp</div>
+                    <div class="rb"><span style="width:69%;background:var(--teal)"></span></div>
+                    <div class="rv">33,420</div>
+                  </div>
+                  <div class="reach-row">
+                    <div class="rn">Both channels</div>
+                    <div class="rb"><span style="width:67%;background:var(--navy-800)"></span></div>
+                    <div class="rv">32,488</div>
+                  </div>
+                  <div class="reach-row">
+                    <div class="rn" style="color:var(--danger)">Unreachable</div>
+                    <div class="rb"><span style="width:4%;background:var(--danger)"></span></div>
+                    <div class="rv">1,842</div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
+                <div class="field">
+                  <label style="font-size:11px;font-weight:600">Geography</label>
+                  <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border-2)"><span>🇺🇸 United States</span><span style="color:var(--text-3);font-family:&#39;JetBrains Mono&#39;,monospace">18,204 · 39%</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border-2)"><span>🇮🇳 India</span><span style="color:var(--text-3);font-family:&#39;JetBrains Mono&#39;,monospace">14,820 · 32%</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border-2)"><span>🇬🇧 United Kingdom</span><span style="color:var(--text-3);font-family:&#39;JetBrains Mono&#39;,monospace">7,210 · 16%</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0"><span>🇨🇦 Canada</span><span style="color:var(--text-3);font-family:&#39;JetBrains Mono&#39;,monospace">6,128 · 13%</span></div>
+                  </div>
+                </div>
+                <div class="field">
+                  <label style="font-size:11px;font-weight:600">Plan Tier</label>
+                  <div style="display:flex;flex-direction:column;gap:4px;margin-top:4px">
+                    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border-2)"><span>Free</span><span style="color:var(--text-3);font-family:&#39;JetBrains Mono&#39;,monospace">31,204 · 67%</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border-2)"><span>Starter</span><span style="color:var(--text-3);font-family:&#39;JetBrains Mono&#39;,monospace">8,910 · 19%</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0;border-bottom:1px solid var(--border-2)"><span>Pro</span><span style="color:var(--text-3);font-family:&#39;JetBrains Mono&#39;,monospace">4,812 · 10%</span></div>
+                    <div style="display:flex;justify-content:space-between;font-size:11px;padding:4px 0"><span>Enterprise</span><span style="color:var(--text-3);font-family:&#39;JetBrains Mono&#39;,monospace">1,436 · 3%</span></div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:11px;font-weight:600;display:flex;justify-content:space-between"><span>Sample Users</span><span style="color:var(--navy);font-weight:500;font-size:11px;cursor:pointer">View all 48,204 →</span></label>
+                <div style="border:1px solid var(--border);border-radius:var(--radius-md);margin-top:4px">
+                  <div class="sample-user"><div class="av">MJ</div><div class="info"><div class="n">Maya Johansson</div><div class="e">maya.j@example.com</div></div><div class="meta">🇺🇸 Free<br>Joined 2d ago</div></div>
+                  <div class="sample-user"><div class="av">AK</div><div class="info"><div class="n">Arjun Kapoor</div><div class="e">arjun.k@example.com</div></div><div class="meta">🇮🇳 Pro<br>Joined 5d ago</div></div>
+                  <div class="sample-user"><div class="av">ER</div><div class="info"><div class="n">Emma Roth</div><div class="e">emma.roth@example.com</div></div><div class="meta">🇬🇧 Starter<br>Joined 4d ago</div></div>
+                  <div class="sample-user"><div class="av">DC</div><div class="info"><div class="n">Diego Castro</div><div class="e">diego.c@example.com</div></div><div class="meta">🇨🇦 Free<br>Joined 6d ago</div></div>
+                  <div class="sample-user"><div class="av">PN</div><div class="info"><div class="n">Priya Nair</div><div class="e">priya.n@example.com</div></div><div class="meta">🇮🇳 Free<br>Joined 1d ago</div></div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- STEP 2: RIGHT - Audience Validation -->
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Audience Validation</h3>
+                <div class="sub">Pre-send checks</div>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div style="padding:12px;background:var(--bg);border-radius:var(--radius-md);border:1px solid var(--border-2)">
+                <div style="display:flex;align-items:baseline;gap:6px"><span style="font-size:28px;font-weight:700;letter-spacing:-0.02em">92</span><span style="font-size:12px;color:var(--text-3)">/100</span></div>
+                <div style="font-size:11px;color:var(--success);font-weight:600;margin-top:2px">Audience ready · 1 info note</div>
+                <div style="height:6px;background:var(--border-2);border-radius:3px;margin-top:8px;overflow:hidden"><div style="width:92%;height:100%;background:var(--success)"></div></div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md)"><div style="width:18px;height:18px;border-radius:50%;background:var(--success-50);color:var(--success);display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div><div style="flex:1"><div style="font-size:11px;font-weight:600">Size within limits</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">46,362 ≤ 500k max per batch</div></div></div>
+                <div style="display:flex;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md)"><div style="width:18px;height:18px;border-radius:50%;background:var(--success-50);color:var(--success);display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div><div style="flex:1"><div style="font-size:11px;font-weight:600">Consent coverage</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">100% have marketing consent</div></div></div>
+                <div style="display:flex;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md)"><div style="width:18px;height:18px;border-radius:50%;background:var(--warning-50);color:var(--warning);display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0">!</div><div style="flex:1"><div style="font-size:11px;font-weight:600">Audience overlap</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">3.1% also in "Q4 Promo Wave 2"</div></div></div>
+                <div style="display:flex;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md)"><div style="width:18px;height:18px;border-radius:50%;background:var(--success-50);color:var(--success);display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div><div style="flex:1"><div style="font-size:11px;font-weight:600">Suppression applied</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">Unsubs, bounces, DND all excluded</div></div></div>
+                <div style="display:flex;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md)"><div style="width:18px;height:18px;border-radius:50%;background:var(--success-50);color:var(--success);display:grid;place-items:center;font-size:11px;font-weight:700;flex-shrink:0">✓</div><div style="flex:1"><div style="font-size:11px;font-weight:600">Recency filter</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">All active in last 7 days</div></div></div>
+              </div>
+
+              <div style="padding:10px 12px;background:var(--teal-50);border-radius:var(--radius-md);border:1px solid #A7F3D0">
+                <div style="font-size:11px;color:var(--text-3);margin-bottom:4px">Estimated Cost</div>
+                <div style="font-size:18px;font-weight:700;color:var(--text);letter-spacing:-0.01em">$182.40</div>
+                <div style="font-size:10px;color:var(--text-3);margin-top:2px">Email $46.36 · WhatsApp $136.04</div>
+              </div>
+
+              <div style="margin-top:auto;display:flex;gap:6px">
+                <button class="btn sm" style="flex:1" onclick="showStep(1)">← Back</button>
+                <button class="btn sm primary" style="flex:1" onclick="showStep(3)">Next: Message →</button>
+              </div>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+
+      <!-- ============ STEP 3 PANEL (existing Message editor) ============ -->
+      <div class="step-panel" data-panel="3">
       <!-- Builder 3-column -->
       <div class="builder">
 
@@ -1561,6 +2291,453 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
         </aside>
 
       </div>
+      </div><!-- /step 3 panel -->
+
+      <!-- ============ STEP 4 PANEL ============ -->
+      <div class="step-panel" data-panel="4">
+        <div class="builder">
+
+          <!-- STEP 4: LEFT - Scheduling -->
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Scheduling</h3>
+                <div class="sub">When and how fast to send</div>
+              </div>
+            </div>
+            <div class="panel-body">
+
+              <div class="field">
+                <label>Send Mode <span class="req">*</span></label>
+                <div class="send-mode">
+                  <div class="mode-card">
+                    <span class="radio"></span>
+                    <div class="mc-txt"><div class="mc-name">Send Now</div><div class="mc-sub">Immediate delivery</div></div>
+                    <span class="mc-tag">INSTANT</span>
+                  </div>
+                  <div class="mode-card on">
+                    <span class="radio"></span>
+                    <div class="mc-txt"><div class="mc-name">Schedule</div><div class="mc-sub">Apr 22, 2026 · 09:30</div></div>
+                    <span class="mc-tag" style="">SELECTED</span>
+                  </div>
+                  <div class="mode-card">
+                    <span class="radio"></span>
+                    <div class="mc-txt"><div class="mc-name">Triggered</div><div class="mc-sub">Fire on event (e.g., sign_up)</div></div>
+                    <span class="mc-tag">EVENT</span>
+                  </div>
+                  <div class="mode-card">
+                    <span class="radio"></span>
+                    <div class="mc-txt"><div class="mc-name">Recurring</div><div class="mc-sub">Daily / weekly / monthly</div></div>
+                    <span class="mc-tag">CRON</span>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+                <div class="field">
+                  <label>Date</label>
+                  <div class="input-group"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 9h18"></path><path d="M8 3v4"></path><path d="M16 3v4"></path></svg><input value="Apr 22, 2026"></div>
+                </div>
+                <div class="field">
+                  <label>Time</label>
+                  <div class="input-group"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><path d="M12 6v6l4 2"></path></svg><input value="09:30"></div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label>Time Zone Mode</label>
+                <div class="segmented" style="width:100%;display:grid;grid-template-columns:1fr 1fr 1fr">
+                  <button class="on">Recipient</button>
+                  <button>Sender</button>
+                  <button>Fixed UTC</button>
+                </div>
+                <div class="hint">Deliver at 09:30 in each user's local time zone</div>
+              </div>
+
+              <div class="field">
+                <label style="display:flex;justify-content:space-between">
+                  <span>Send-Time Optimization</span>
+                  <span class="switch on" onclick="this.classList.toggle(&#39;on&#39;)"></span>
+                </label>
+                <div class="hint">ML picks best 2h window per user · avg +18% open lift</div>
+              </div>
+
+              <div class="field">
+                <label>Throttling</label>
+                <div class="segmented" style="width:100%;display:grid;grid-template-columns:repeat(4,1fr)">
+                  <button>0</button>
+                  <button>500/s</button>
+                  <button class="on">1k/s</button>
+                  <button>∞</button>
+                </div>
+                <div class="hint">Protect downstream systems with controlled send rate</div>
+              </div>
+
+              <div class="field">
+                <label>Frequency Cap</label>
+                <div style="display:grid;grid-template-columns:60px 1fr 100px;gap:6px;align-items:center">
+                  <input class="input" value="2">
+                  <span style="font-size:11px;color:var(--text-3)">messages per user</span>
+                  <select class="select"><option>per week</option><option>per day</option><option>per month</option></select>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="display:flex;justify-content:space-between">
+                  <span>Quiet Hours</span>
+                  <span class="switch on" onclick="this.classList.toggle(&#39;on&#39;)"></span>
+                </label>
+                <div style="display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:center;margin-top:2px">
+                  <input class="input" value="21:00">
+                  <span style="color:var(--text-3)">→</span>
+                  <input class="input" value="08:00">
+                </div>
+                <div class="hint">Local time · transactional bypasses this</div>
+              </div>
+
+            </div>
+          </aside>
+
+          <!-- STEP 4: MIDDLE - Smart Optimizations -->
+          <section class="panel">
+            <div class="panel-head" style="justify-content:space-between">
+              <div>
+                <h3>Smart Delivery</h3>
+                <div class="sub">Best-time heatmap, A/B, conversion tracking</div>
+              </div>
+              <span class="pill navy" style="background:var(--teal-50);color:var(--teal);padding:3px 8px;font-size:10px;font-weight:600;border-radius:4px">STO Enabled</span>
+            </div>
+            <div class="panel-body" style="gap:18px">
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none">Best-Time Heatmap <span style="font-weight:400;color:var(--text-3);font-size:11px">· open rate by hour, last 30d</span></label>
+                <div class="heatmap" style="margin-top:8px" id="hm">
+                  <div class="hm-d"></div>
+                  <div class="hm-h">0</div><div class="hm-h">2</div><div class="hm-h">4</div><div class="hm-h">6</div><div class="hm-h">8</div><div class="hm-h">10</div><div class="hm-h">12</div><div class="hm-h">14</div><div class="hm-h">16</div><div class="hm-h">18</div><div class="hm-h">20</div><div class="hm-h">22</div>
+                  <div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div><div class="hm-h"></div>
+                <div class="hm-d">Mon</div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgb(27, 77, 255); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-d">Tue</div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgb(27, 77, 255); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-d">Wed</div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgb(27, 77, 255); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgb(27, 77, 255); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgb(27, 77, 255); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-d">Thu</div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgb(27, 77, 255); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgb(27, 77, 255); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-d">Fri</div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.89); outline: 1.5px solid var(--orange);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.776);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.667);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-d">Sat</div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.557);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-d">Sun</div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.443);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.333);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.224);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0.11);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div><div class="hm-c" style="background: rgba(27, 77, 255, 0);"></div></div>
+                <script>
+                  // Generate heatmap cells
+                  (function(){
+                    var hm = document.getElementById('hm');
+                    if(!hm) return;
+                    var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+                    var intensities = [
+                      [1,1,0,0,0,1,2,4,7,9,8,6,5,6,7,8,7,6,4,3,2,2,1,1],
+                      [1,0,0,0,1,1,3,5,8,9,7,6,5,7,8,8,7,5,4,3,2,1,1,1],
+                      [1,1,0,0,0,1,3,6,9,9,8,7,6,7,8,9,7,6,4,3,2,2,1,1],
+                      [1,1,0,0,0,1,2,5,8,9,9,7,6,7,8,8,7,5,4,3,2,1,1,1],
+                      [1,0,0,0,0,1,2,4,7,8,7,5,4,5,6,6,5,4,3,2,1,1,1,1],
+                      [0,0,0,0,0,0,1,2,3,4,5,5,4,5,5,4,3,2,2,1,1,1,1,0],
+                      [0,0,0,0,0,1,1,2,3,3,4,4,3,3,4,3,2,2,1,1,1,1,0,0]
+                    ];
+                    days.forEach(function(d,i){
+                      var dc = document.createElement('div'); dc.className='hm-d'; dc.textContent=d; hm.appendChild(dc);
+                      for(var h=0;h<24;h++){
+                        var v = intensities[i][h];
+                        var c = document.createElement('div'); c.className='hm-c';
+                        var opacity = Math.min(1, v/9);
+                        c.style.background = 'rgba(27,77,255,'+opacity+')';
+                        if(v >= 8) c.style.outline = '1.5px solid var(--orange)';
+                        hm.appendChild(c);
+                      }
+                    });
+                  })();
+                </script>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;font-size:10px;color:var(--text-3)">
+                  <span>← less engaged</span>
+                  <span style="display:flex;align-items:center;gap:4px"><span style="width:10px;height:10px;outline:1.5px solid var(--orange)"></span> Peak window</span>
+                  <span>more engaged →</span>
+                </div>
+                <div style="padding:10px;background:var(--navy-50);border-radius:var(--radius-md);margin-top:10px;font-size:11px;color:var(--text);line-height:1.5">
+                  <strong style="color:var(--navy)">Recommended window:</strong> Tue-Thu · 09:00-11:00 local. STO will target this window automatically.
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none">A/B Test Variants</label>
+                <div style="border:1px solid var(--border);border-radius:var(--radius-md);margin-top:6px;overflow:hidden">
+                  <div class="variant-row">
+                    <div class="vlabel">A</div>
+                    <div><div class="vname">Welcome aboard, {{user.first_name}}</div><div class="vsub">welcome-hero-v4 · Champion</div></div>
+                    <div class="vpct">45%</div>
+                    <div><button class="btn sm">Edit</button></div>
+                  </div>
+                  <div class="variant-row">
+                    <div class="vlabel b">B</div>
+                    <div><div class="vname">Your checklist is waiting</div><div class="vsub">welcome-hero-v4-B · Variant</div></div>
+                    <div class="vpct">45%</div>
+                    <div><button class="btn sm">Edit</button></div>
+                  </div>
+                  <div class="variant-row">
+                    <div class="vlabel c">C</div>
+                    <div><div class="vname">Holdout (control)</div><div class="vsub">No send · measures organic baseline</div></div>
+                    <div class="vpct">10%</div>
+                    <div><button class="btn sm">—</button></div>
+                  </div>
+                </div>
+                <div class="hint" style="margin-top:6px">Winner auto-selected after 72h using Bayesian significance on click-through rate</div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none">Conversion Goal</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:6px">
+                  <div>
+                    <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Goal event</div>
+                    <select class="select"><option>Completed Onboarding</option><option>First Purchase</option></select>
+                  </div>
+                  <div>
+                    <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Window</div>
+                    <select class="select"><option>7 days</option><option>3 days</option><option>24 hours</option></select>
+                  </div>
+                  <div>
+                    <div style="font-size:10px;color:var(--text-3);margin-bottom:3px">Attribution</div>
+                    <select class="select"><option>Last-touch</option><option>First-touch</option><option>Linear</option></select>
+                  </div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none;display:flex;justify-content:space-between"><span>UTM Parameters</span><span style="font-size:11px;color:var(--navy);font-weight:500;cursor:pointer">Auto-generate</span></label>
+                <div style="border:1px solid var(--border);border-radius:var(--radius-md);padding:10px;margin-top:6px">
+                  <div class="utm-row"><label>utm_source</label><input class="input" value="lifecycle"></div>
+                  <div class="utm-row"><label>utm_medium</label><input class="input" value="email"></div>
+                  <div class="utm-row"><label>utm_campaign</label><input class="input" value="welcome-series-oct-2026"></div>
+                  <div class="utm-row"><label>utm_content</label><input class="input" value="{{variant.id}}"></div>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- STEP 4: RIGHT - Send Projection -->
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Send Projection</h3>
+                <div class="sub">Delivery forecast</div>
+              </div>
+            </div>
+            <div class="panel-body">
+
+              <div style="padding:12px;background:var(--navy);color:#fff;border-radius:var(--radius-md)">
+                <div style="font-size:10px;opacity:.85;text-transform:uppercase;letter-spacing:.06em">Launches on</div>
+                <div style="font-size:18px;font-weight:700;margin-top:2px">Apr 22 · 09:30</div>
+                <div style="font-size:11px;opacity:.85;margin-top:2px">Recipient local time · STO ±2h window</div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:11px;font-weight:600">Hourly Throttle</label>
+                <div style="display:flex;align-items:flex-end;gap:2px;height:60px;padding:6px;background:var(--bg);border-radius:var(--radius-md);margin-top:4px">
+                  <div style="flex:1;height:35%;background:var(--navy);border-radius:2px 2px 0 0"></div>
+                  <div style="flex:1;height:58%;background:var(--navy);border-radius:2px 2px 0 0"></div>
+                  <div style="flex:1;height:78%;background:var(--navy);border-radius:2px 2px 0 0"></div>
+                  <div style="flex:1;height:92%;background:var(--navy);border-radius:2px 2px 0 0"></div>
+                  <div style="flex:1;height:100%;background:var(--orange);border-radius:2px 2px 0 0"></div>
+                  <div style="flex:1;height:88%;background:var(--navy);border-radius:2px 2px 0 0"></div>
+                  <div style="flex:1;height:62%;background:var(--navy);border-radius:2px 2px 0 0"></div>
+                  <div style="flex:1;height:40%;background:var(--navy);border-radius:2px 2px 0 0"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-3);margin-top:3px"><span>07:00</span><span style="color:var(--orange);font-weight:600">Peak 10:00</span><span>14:00</span></div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md);font-size:11px"><div style="width:18px;height:18px;border-radius:50%;background:var(--success-50);color:var(--success);display:grid;place-items:center;font-size:11px;font-weight:700">✓</div>Conversion tracking armed</div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md);font-size:11px"><div style="width:18px;height:18px;border-radius:50%;background:var(--success-50);color:var(--success);display:grid;place-items:center;font-size:11px;font-weight:700">✓</div>A/B test ready · 3 variants</div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md);font-size:11px"><div style="width:18px;height:18px;border-radius:50%;background:var(--success-50);color:var(--success);display:grid;place-items:center;font-size:11px;font-weight:700">✓</div>Quiet hours configured</div>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:var(--bg);border-radius:var(--radius-md);font-size:11px"><div style="width:18px;height:18px;border-radius:50%;background:var(--success-50);color:var(--success);display:grid;place-items:center;font-size:11px;font-weight:700">✓</div>UTM tracking applied</div>
+              </div>
+
+              <div style="padding:10px 12px;background:var(--warning-50);border-radius:var(--radius-md);border:1px solid #FDE68A;font-size:11px;line-height:1.5;color:var(--text-2)">
+                <strong style="color:var(--warning)">⚠ Throttled send</strong><br>
+                At 1k/s, full delivery will take ~46 min. Consider ∞ if delivery urgency is critical.
+              </div>
+
+              <div style="margin-top:auto;display:flex;gap:6px">
+                <button class="btn sm" style="flex:1" onclick="showStep(3)">← Back</button>
+                <button class="btn sm primary" style="flex:1" onclick="showStep(5)">Next: Review →</button>
+              </div>
+            </div>
+          </aside>
+
+        </div>
+      </div>
+
+      <!-- ============ STEP 5 PANEL ============ -->
+      <div class="step-panel" data-panel="5">
+        <div class="builder">
+
+          <!-- STEP 5: LEFT - Campaign Summary -->
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Campaign Summary</h3>
+                <div class="sub">Read-only snapshot · click edit to modify</div>
+              </div>
+            </div>
+            <div class="panel-body">
+
+              <div class="summary-card">
+                <div class="sc-head"><div class="sc-num">1</div><div class="sc-title">Campaign Type</div><div class="sc-edit" onclick="showStep(1)">Edit</div></div>
+                <div class="sc-body">
+                  <div class="k">Objective</div><div class="v">One-time</div>
+                  <div class="k">Channels</div><div class="v">Email + WhatsApp</div>
+                  <div class="k">Template</div><div class="v">Welcome Series</div>
+                  <div class="k">Folder</div><div class="v">Lifecycle / Onboarding</div>
+                  <div class="k">Owner</div><div class="v">Priya Kulkarni</div>
+                </div>
+              </div>
+
+              <div class="summary-card">
+                <div class="sc-head"><div class="sc-num">2</div><div class="sc-title">Audience</div><div class="sc-edit" onclick="showStep(2)">Edit</div></div>
+                <div class="sc-body">
+                  <div class="k">Base segment</div><div class="v">New users · last 7 days</div>
+                  <div class="k">Include rules</div><div class="v">2 active</div>
+                  <div class="k">Exclude rules</div><div class="v">3 active</div>
+                  <div class="k">Reachable</div><div class="v" style="color:var(--success);font-weight:600">46,362 / 48,204 (96.2%)</div>
+                </div>
+              </div>
+
+              <div class="summary-card">
+                <div class="sc-head"><div class="sc-num">3</div><div class="sc-title">Message</div><div class="sc-edit" onclick="showStep(3)">Edit</div></div>
+                <div class="sc-body">
+                  <div class="k">Email subject</div><div class="v">Welcome aboard, {{user.first_name}}.</div>
+                  <div class="k">Template</div><div class="v">welcome-hero-v4 · Approved</div>
+                  <div class="k">WhatsApp template</div><div class="v">welcome_nudge_v2 (48h fallback)</div>
+                  <div class="k">Variables</div><div class="v" style="color:var(--success)">4 mapped · 0 missing</div>
+                </div>
+              </div>
+
+              <div class="summary-card">
+                <div class="sc-head"><div class="sc-num">4</div><div class="sc-title">Delivery</div><div class="sc-edit" onclick="showStep(4)">Edit</div></div>
+                <div class="sc-body">
+                  <div class="k">Launch time</div><div class="v">Apr 22, 2026 · 09:30 local</div>
+                  <div class="k">Send mode</div><div class="v">Scheduled · STO enabled</div>
+                  <div class="k">Throttle</div><div class="v">1,000/s (est. 46 min)</div>
+                  <div class="k">Frequency cap</div><div class="v">2 per user · per week</div>
+                  <div class="k">Quiet hours</div><div class="v">21:00 → 08:00</div>
+                  <div class="k">Conversion goal</div><div class="v">Completed Onboarding · 7d</div>
+                  <div class="k">A/B test</div><div class="v">A 45% · B 45% · Control 10%</div>
+                </div>
+              </div>
+
+            </div>
+          </aside>
+
+          <!-- STEP 5: MIDDLE - Preview & Simulation -->
+          <section class="panel">
+            <div class="panel-head" style="justify-content:space-between">
+              <div>
+                <h3>Preview &amp; Simulation</h3>
+                <div class="sub">What will happen when you press launch</div>
+              </div>
+              <div class="segmented">
+                <button class="on">Email</button>
+                <button>WhatsApp</button>
+              </div>
+            </div>
+            <div class="panel-body" style="gap:16px">
+
+              <div style="background:var(--bg);padding:16px;border-radius:var(--radius-md)">
+                <div style="background:#fff;border:1px solid var(--border);border-radius:var(--radius-md);overflow:hidden;max-width:440px;margin:0 auto;box-shadow:var(--shadow-sm)">
+                  <div style="padding:12px 14px;border-bottom:1px solid var(--border-2);background:#fcfdff">
+                    <div style="font-size:13px;font-weight:700;color:#0b1424">Welcome aboard, {{user.first_name}}.</div>
+                    <div style="font-size:11px;color:var(--text-3);margin-top:3px">2 mins to set up · checklist inside</div>
+                    <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:10px;color:var(--text-3)">
+                      <span>Northwind Team &lt;welcome@northwind.app&gt;</span>
+                      <span>Apr 22 · 09:30</span>
+                    </div>
+                  </div>
+                  <div style="height:100px;background:#E6EEF7;background-image:linear-gradient(135deg, rgba(27,77,255,.08) 25%, transparent 25%, transparent 50%, rgba(27,77,255,.08) 50%, rgba(27,77,255,.08) 75%, transparent 75%);background-size:16px 16px;display:grid;place-items:center;font-size:10px;color:var(--navy);font-weight:500">hero-banner-1440x480</div>
+                  <div style="padding:16px">
+                    <div style="font-size:16px;font-weight:700;color:#0b1424;margin-bottom:6px;letter-spacing:-0.01em">Welcome aboard, <span style="color:var(--orange);font-family:&#39;JetBrains Mono&#39;,monospace;font-size:13px">{{user.first_name}}</span>.</div>
+                    <p style="font-size:12px;color:#334155;margin:0 0 10px;line-height:1.55">We're glad you're here. Finish your setup in 3 quick steps and unlock your first automation by tomorrow.</p>
+                    <a class="email-cta" href="file:///Users/apple/Library/Application%20Support/Claude/local-agent-mode-sessions/e8f63828-420b-475c-b744-e6cc1aaabf1e/6b1f136a-56f1-4dba-960b-9e271a27b29b/local_54a13683-1e53-4fc7-9628-429bbac77913/outputs/campaign-builder.html#">Open my onboarding checklist →</a>
+                  </div>
+                  <div style="padding:10px 16px;background:#f8fafc;border-top:1px solid var(--border-2);font-size:10px;color:var(--text-3);line-height:1.4">Northwind Technologies · Received because you signed up on Apr 15 · <a href="file:///Users/apple/Library/Application%20Support/Claude/local-agent-mode-sessions/e8f63828-420b-475c-b744-e6cc1aaabf1e/6b1f136a-56f1-4dba-960b-9e271a27b29b/local_54a13683-1e53-4fc7-9628-429bbac77913/outputs/campaign-builder.html#" style="color:var(--text-2)">Unsubscribe</a></div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none">What will happen in the next hour</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:6px">
+                  <div style="padding:12px;background:var(--navy-50);border:1px solid #C7D0FF;border-radius:var(--radius-md);text-align:center"><div style="font-size:22px;font-weight:700;color:var(--navy);letter-spacing:-0.02em">46,362</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">will receive</div></div>
+                  <div style="padding:12px;background:var(--teal-50);border:1px solid #A7F3D0;border-radius:var(--radius-md);text-align:center"><div style="font-size:22px;font-weight:700;color:var(--teal);letter-spacing:-0.02em">~19,750</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">projected opens</div></div>
+                  <div style="padding:12px;background:var(--orange-50);border:1px solid #FFDBB7;border-radius:var(--radius-md);text-align:center"><div style="font-size:22px;font-weight:700;color:var(--orange);letter-spacing:-0.02em">~5,470</div><div style="font-size:10px;color:var(--text-3);margin-top:2px">projected clicks</div></div>
+                </div>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px">
+                  <div style="padding:10px;border:1px solid var(--border);border-radius:var(--radius-md);text-align:center"><div style="font-size:16px;font-weight:700">~1,912</div><div style="font-size:10px;color:var(--text-3)">checklist completions</div></div>
+                  <div style="padding:10px;border:1px solid var(--border);border-radius:var(--radius-md);text-align:center"><div style="font-size:16px;font-weight:700">$182</div><div style="font-size:10px;color:var(--text-3)">send cost</div></div>
+                  <div style="padding:10px;border:1px solid var(--border);border-radius:var(--radius-md);text-align:center"><div style="font-size:16px;font-weight:700">46 min</div><div style="font-size:10px;color:var(--text-3)">full delivery</div></div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:12px;color:var(--text);font-weight:700;text-transform:none">Pre-launch test</label>
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:4px">
+                  <button class="btn" style="justify-content:center"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg> Send test to me</button>
+                  <button class="btn" style="justify-content:center">Send test to team (4)</button>
+                </div>
+              </div>
+
+            </div>
+          </section>
+
+          <!-- STEP 5: RIGHT - Launch -->
+          <aside class="panel">
+            <div class="panel-head">
+              <div>
+                <h3>Approval &amp; Launch</h3>
+                <div class="sub">Final publish gate</div>
+              </div>
+            </div>
+            <div class="panel-body">
+
+              <div style="padding:14px;background:var(--teal-50);border-radius:var(--radius-md);border:1px solid #A7F3D0">
+                <div style="display:flex;align-items:baseline;gap:6px">
+                  <span style="font-size:32px;font-weight:700;letter-spacing:-0.02em;color:var(--teal)">96</span>
+                  <span style="font-size:13px;color:var(--text-3)">/100</span>
+                </div>
+                <div style="font-size:11px;color:var(--teal);font-weight:700;margin-top:2px">Ready to launch</div>
+                <div style="height:6px;background:#fff;border-radius:3px;margin-top:8px;overflow:hidden"><div style="width:96%;height:100%;background:var(--teal)"></div></div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:11px;font-weight:600">Approvers</label>
+                <div style="border:1px solid var(--border);border-radius:var(--radius-md);margin-top:4px">
+                  <div class="approver-row"><div class="av-sm">RS</div><div class="info"><div class="n">Rahul Sinha · Lifecycle Lead</div><div class="r">Required · approved 2h ago</div></div><span style="font-size:10px;color:var(--success);font-weight:700">✓ APPROVED</span></div>
+                  <div class="approver-row"><div class="av-sm">MK</div><div class="info"><div class="n">Meera Kapoor · Content</div><div class="r">Required · approved 1h ago</div></div><span style="font-size:10px;color:var(--success);font-weight:700">✓ APPROVED</span></div>
+                  <div class="approver-row"><div class="av-sm" style="background:var(--warning-50);color:var(--warning)">FN</div><div class="info"><div class="n">Finance Bot · auto-check</div><div class="r">Cost &lt; $200 threshold · awaiting</div></div><span style="font-size:10px;color:var(--warning);font-weight:700">⌛ PENDING</span></div>
+                </div>
+              </div>
+
+              <div class="field">
+                <label style="font-size:11px;font-weight:600">Launch checklist</label>
+                <div style="display:flex;flex-direction:column;gap:3px;margin-top:4px;font-size:11px">
+                  <div style="display:flex;align-items:center;gap:8px;padding:5px 0"><span class="checkbox on"></span>Message approved by Legal</div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:5px 0"><span class="checkbox on"></span>Deliverability score ≥ 90</div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:5px 0"><span class="checkbox on"></span>Conversion tracking verified</div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:5px 0"><span class="checkbox on"></span>Test sends received</div>
+                  <div style="display:flex;align-items:center;gap:8px;padding:5px 0;color:var(--text-3)"><span class="checkbox"></span>Finance approval (auto)</div>
+                </div>
+              </div>
+
+              <div style="display:flex;flex-direction:column;gap:6px;margin-top:auto">
+                <button class="launch-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 2l8 8h-5v10h-6V10H4z"></path></svg>
+                  Schedule Launch · Apr 22
+                </button>
+                <button class="launch-btn alt">Launch Now</button>
+                <button class="btn sm" style="justify-content:center;margin-top:4px">Save as Draft</button>
+              </div>
+
+            </div>
+          </aside>
+
+        </div>
+      </div>
+
+      </div><!-- /step-panels -->
 
       <!-- KPI strip -->
       <div class="kpi-grid">
@@ -1843,7 +3020,7 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
               </defs>
               <rect width="600" height="220" fill="url(#grid)" opacity="0.6"></rect>
               <!-- Open rate line (navy) -->
-              <polyline fill="none" stroke="#1A3C6B" stroke-width="2" points="0,80 50,75 100,72 150,78 200,65 250,60 300,70 350,55 400,50 450,58 500,45 550,40 600,48"></polyline>
+              <polyline fill="none" stroke="#1B4DFF" stroke-width="2" points="0,80 50,75 100,72 150,78 200,65 250,60 300,70 350,55 400,50 450,58 500,45 550,40 600,48"></polyline>
               <!-- Click rate line (orange) -->
               <polyline fill="none" stroke="#E85D04" stroke-width="2" points="0,150 50,148 100,145 150,152 200,138 250,135 300,140 350,128 400,122 450,130 500,115 550,110 600,118"></polyline>
               <!-- Reply rate (teal) -->
@@ -1851,7 +3028,7 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
             </svg>
           </div>
           <div class="card-foot" style="gap:18px;font-size:11px;color:var(--text-2)">
-            <span><span style="display:inline-block;width:10px;height:2px;background:#1A3C6B;vertical-align:middle;margin-right:4px"></span>Open rate</span>
+            <span><span style="display:inline-block;width:10px;height:2px;background:#1B4DFF;vertical-align:middle;margin-right:4px"></span>Open rate</span>
             <span><span style="display:inline-block;width:10px;height:2px;background:#E85D04;vertical-align:middle;margin-right:4px"></span>Click rate</span>
             <span><span style="display:inline-block;width:10px;height:2px;background:#00C9A7;vertical-align:middle;margin-right:4px"></span>Reply rate (WA)</span>
             <span class="right muted">Updated 4 min ago</span>
@@ -2583,6 +3760,81 @@ textarea.input{height:auto;padding:8px 10px;resize:vertical;min-height:64px;line
   // Switch toggles
   document.querySelectorAll('.switch').forEach(sw=>{
     sw.addEventListener('click', ()=>sw.classList.toggle('on'));
+  });
+
+  // Campaign builder step switching
+  function showStep(n){
+    const panels = document.querySelectorAll('.step-panels > .step-panel');
+    panels.forEach(p => p.classList.toggle('active', p.getAttribute('data-panel') === String(n)));
+
+    // Update stepper states: 1..n-1 done, n active, rest default
+    const steps = document.querySelectorAll('#cbStepper .step');
+    steps.forEach(s => {
+      const idx = parseInt(s.getAttribute('data-step'), 10);
+      s.classList.remove('active','done');
+      const numEl = s.querySelector('.step-num');
+      const labelEl = s.querySelector('.step-label');
+      if (idx < n){
+        s.classList.add('done');
+        if (numEl) numEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+        if (labelEl) labelEl.textContent = 'Step ' + idx;
+      } else if (idx === n){
+        s.classList.add('active');
+        if (numEl) numEl.textContent = String(n);
+        if (labelEl) labelEl.textContent = 'Step ' + idx + ' · In progress';
+      } else {
+        if (numEl) numEl.textContent = String(idx);
+        if (labelEl) labelEl.textContent = 'Step ' + idx;
+      }
+    });
+
+    // Scroll builder into view
+    const sp = document.getElementById('cbStepPanels');
+    if (sp) sp.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  // Mode-card (step 4 send mode) selection
+  document.querySelectorAll('.send-mode').forEach(group => {
+    group.querySelectorAll('.mode-card').forEach(card => {
+      card.addEventListener('click', () => {
+        group.querySelectorAll('.mode-card').forEach(c => {
+          c.classList.remove('on');
+          const tag = c.querySelector('.mc-tag');
+          if (tag) tag.style.background = '', tag.style.color = '';
+        });
+        card.classList.add('on');
+      });
+    });
+  });
+
+  // Obj-card (step 1 objective) selection
+  document.querySelectorAll('.objective-grid').forEach(grid => {
+    grid.querySelectorAll('.obj-card').forEach(card => {
+      card.addEventListener('click', () => {
+        grid.querySelectorAll('.obj-card').forEach(c => c.classList.remove('on'));
+        card.classList.add('on');
+      });
+    });
+  });
+
+  // Ch-card (step 1 channels) toggling
+  document.querySelectorAll('.ch-card').forEach(card => {
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.ch-tog')) return; // switch handles its own
+      card.classList.toggle('on');
+      const sw = card.querySelector('.ch-tog');
+      if (sw) sw.classList.toggle('on', card.classList.contains('on'));
+    });
+  });
+
+  // Tpl-card (step 1 templates) selection
+  document.querySelectorAll('.template-gallery').forEach(gallery => {
+    gallery.querySelectorAll('.tpl-card').forEach(card => {
+      card.addEventListener('click', () => {
+        gallery.querySelectorAll('.tpl-card').forEach(c => c.classList.remove('on'));
+        card.classList.add('on');
+      });
+    });
   });
 </script>
 
