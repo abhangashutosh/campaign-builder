@@ -2,7 +2,7 @@ import 'reflect-metadata'
 import { DataSource } from 'typeorm'
 import { createCipheriv, randomBytes } from 'crypto'
 
-const TENANT_ID = 'default'
+const TENANT_ID = '00000000-0000-0000-0000-000000000001'
 const ENCRYPTION_KEY = Buffer.from(process.env.ENCRYPTION_KEY || '0'.repeat(64), 'hex')
 
 function encryptCredentials(data: Record<string, string>): Buffer {
