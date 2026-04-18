@@ -1,14 +1,16 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
+import type { LucideProps } from 'lucide-react'
 import { Search, Grid3X3, List, Edit2, Copy, Trash2, Mail, MessageSquare, Bell, Smartphone, Globe, Monitor } from 'lucide-react'
 import { useTemplates } from '@/hooks/use-templates'
 import type { Template } from '@/types'
 
 type Channel = 'all' | 'email' | 'whatsapp' | 'push' | 'sms' | 'inapp' | 'webpush'
 type StatusFilter = 'all' | 'approved' | 'pending' | 'draft' | 'rejected' | 'archived'
+type LIcon = React.ForwardRefExoticComponent<Omit<LucideProps, 'ref'> & React.RefAttributes<SVGSVGElement>>
 
-const CHANNEL_TABS: { id: Channel; label: string; count: number; Icon?: React.ComponentType<{ size?: number }> }[] = [
+const CHANNEL_TABS: { id: Channel; label: string; count: number; Icon?: LIcon }[] = [
   { id: 'all',      label: 'All',      count: 127 },
   { id: 'email',    label: 'Email',    count: 52,  Icon: Mail },
   { id: 'whatsapp', label: 'WhatsApp', count: 28,  Icon: MessageSquare },
@@ -100,7 +102,7 @@ function ChannelPill({ type }: { type: string }) {
   const labels: Record<string, string> = {
     email: 'Email', whatsapp: 'WhatsApp', push: 'Push', sms: 'SMS', inapp: 'In-app', webpush: 'Web Push',
   }
-  const icons: Record<string, React.ComponentType<{ size?: number }>> = {
+  const icons: Record<string, LIcon> = {
     email: Mail, whatsapp: MessageSquare, push: Bell, sms: Smartphone, inapp: Monitor, webpush: Globe,
   }
   const Icon = icons[type] ?? Mail
