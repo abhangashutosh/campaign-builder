@@ -24,7 +24,10 @@ export class JourneysService {
   }
 
   async update(tenantId: string, id: string, data: Partial<Journey>): Promise<Journey | null> {
-    await this.repo.update({ id, tenantId } as any, data)
+    const journey = await this.findOne(tenantId, id)
+    if (!journey) return null
+    Object.assign(journey, data)
+    await this.repo.save(journey)
     return this.findOne(tenantId, id)
   }
 }

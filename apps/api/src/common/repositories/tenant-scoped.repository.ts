@@ -18,14 +18,14 @@ export abstract class TenantScopedRepository<T extends { tenantId: string; delet
         ...(opts?.where as object),
         tenantId,
         deletedAt: null,
-      } as FindManyOptions<T>['where'],
+      } as unknown as FindManyOptions<T>['where'],
     })
   }
 
   async findOne(tenantId: string, id: string): Promise<T | null> {
     this.assertTenant(tenantId)
     return this.repo.findOne({
-      where: { id, tenantId, deletedAt: null } as FindOneOptions<T>['where'],
+      where: { id, tenantId, deletedAt: null } as unknown as FindOneOptions<T>['where'],
     })
   }
 

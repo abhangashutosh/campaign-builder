@@ -10,10 +10,10 @@ const config: Config = {
     extend: {
       colors: {
         navy: {
-          DEFAULT: '#1B4DFF',
-          50: '#EEF2FF',
-          700: '#1640D6',
-          800: '#0E30A8',
+          DEFAULT: '#1E3A5F',
+          50: '#EEF3FA',
+          700: '#16304F',
+          800: '#0E2540',
         },
         teal: {
           DEFAULT: '#00C9A7',
@@ -33,11 +33,11 @@ const config: Config = {
         },
         danger: {
           DEFAULT: '#DC2626',
-          50: '#FEECEC',
+          50: '#FEF2F2',
         },
       },
       fontFamily: {
-        sans: ['Inter', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
       },
     },
   },

@@ -23,7 +23,8 @@ export class ContactsRepository extends TenantScopedRepository<Contact> {
       .createQueryBuilder()
       .insert()
       .into(Contact)
-      .values(values)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .values(values as any)
       .orUpdate(
         ['first_name', 'last_name', 'email', 'phone', 'attributes', 'consent_email', 'consent_whatsapp', 'lifecycle_stage', 'updated_at'],
         ['tenant_id', 'external_id'],

@@ -32,6 +32,9 @@ interface Step4Data {
   }
   utmParams: { source: string; medium: string; campaign: string; content: string }
   abTestConfig: { goal: string; windowDays: number; attribution: string }
+  stoEnabled: boolean
+  rateLimit: 'none' | '500' | '1000' | 'unlimited'
+  suppressionRules: string[]
 }
 
 interface CampaignBuilderStore {
@@ -69,6 +72,9 @@ const defaultStep4: Step4Data = {
   metadata: {},
   utmParams: { source: '', medium: '', campaign: '', content: '' },
   abTestConfig: { goal: '', windowDays: 7, attribution: 'last_touch' },
+  stoEnabled: false,
+  rateLimit: '1000',
+  suppressionRules: [],
 }
 
 export const useCampaignBuilderStore = create<CampaignBuilderStore>()(
@@ -96,6 +102,16 @@ export const useCampaignBuilderStore = create<CampaignBuilderStore>()(
           step4: defaultStep4,
         }),
     }),
-    { name: 'campaign-builder' },
+    {
+      name: 'campaign-builder',
+      version: 2,
+      migrate: (persisted) => {
+        const s = persisted as Partial<CampaignBuilderStore>
+        return {
+          ...s,
+          step4: { ...defaultStep4, ...(s.step4 ?? {}) },
+        }
+      },
+    },
   ),
 )

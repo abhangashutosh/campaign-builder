@@ -30,6 +30,7 @@ export interface Segment {
   name: string
   audienceEstimate?: number
   rules: { include: unknown[]; exclude: unknown[] }
+  refreshCadence: string
   createdAt: string
 }
 
@@ -38,6 +39,7 @@ export interface Template {
   name: string
   type: ChannelType
   subject?: string
+  htmlBody?: string
   approvalStatus: string
   category: string
   variables: string[]

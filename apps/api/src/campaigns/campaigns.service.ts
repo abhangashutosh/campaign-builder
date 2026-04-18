@@ -68,9 +68,11 @@ export class CampaignsService {
 
   async getReports(tenantId: string, id: string) {
     await this.repo.findOneOrFail(tenantId, id)
-    const events = await this.deliveryEventRepo.find({
-      where: { tenantId } as any,
-    })
+    const events = await this.deliveryEventRepo
+      .createQueryBuilder('de')
+      .innerJoin('campaign_deliveries', 'cd', 'cd.id = de.delivery_id AND cd.campaign_id = :id', { id })
+      .where('de.tenant_id = :tenantId', { tenantId })
+      .getMany()
 
     const counts = { sent: 0, delivered: 0, opened: 0, clicked: 0, bounced: 0, failed: 0 }
     const failureBreakdown = { hardBounce: 0, spamComplaint: 0, invalidAddress: 0 }
@@ -80,8 +82,8 @@ export class CampaignsService {
       if (t in counts) counts[t]++
       if (e.eventType === 'bounced') {
         const meta = e.metadata as Record<string, string>
-        if (meta?.bounceType === 'hard') failureBreakdown.hardBounce++
-        if (meta?.bounceType === 'invalid') failureBreakdown.invalidAddress++
+        if (meta?.bounce_type === 'hard') failureBreakdown.hardBounce++
+        if (meta?.bounce_type === 'invalid') failureBreakdown.invalidAddress++
       }
       if (e.eventType === 'complained') failureBreakdown.spamComplaint++
     }

@@ -3,34 +3,61 @@
 @tailwind utilities;
 
 :root {
-  --navy:       #1B4DFF;
-  --navy-700:   #1640D6;
-  --navy-800:   #0E30A8;
-  --navy-50:    #EEF2FF;
-  --orange:     #E85D04;
-  --orange-50:  #FFF1E6;
+  /* Brand — dark navy (matches design) */
+  --navy:       #1E3A5F;
+  --navy-700:   #16304F;
+  --navy-800:   #0E2540;
+  --navy-50:    #EEF3FA;
+
+  /* Accent */
   --teal:       #00C9A7;
   --teal-50:    #E6FBF5;
-  --bg:         #F7F9FC;
-  --text:       #0F172A;
-  --text-2:     #475569;
-  --text-3:     #64748B;
+  --orange:     #E85D04;
+  --orange-50:  #FFF1E6;
+
+  /* Semantic */
   --success:    #16A34A;
   --success-50: #ECFDF3;
   --warning:    #D97706;
   --warning-50: #FEF6E7;
   --danger:     #DC2626;
-  --danger-50:  #FEECEC;
+  --danger-50:  #FEF2F2;
+
+  /* Neutrals */
+  --bg:         #F7F9FC;
+  --text:       #0F172A;
+  --text-2:     #475569;
+  --text-3:     #94A3B8;
   --border:     #E2E8F0;
   --card:       #FFFFFF;
+}
+
+html {
+  font-family: var(--font-inter, 'Inter'), system-ui, -apple-system, sans-serif;
 }
 
 body {
   background-color: var(--bg);
   color: var(--text);
-  font-family: 'Inter', system-ui, sans-serif;
 }
 
 * {
   border-color: var(--border);
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
+/* Remove default button outline on click but keep for keyboard */
+button:focus-visible,
+a:focus-visible {
+  outline: 2px solid var(--navy);
+  outline-offset: 2px;
+}
+
+/* Input autofill doesn't override our bg */
+input:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px white inset;
 }
