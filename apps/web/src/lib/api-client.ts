@@ -7,7 +7,7 @@ async function apiRequest<T>(path: string, options?: RequestInit): Promise<T> {
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      'x-tenant-id': 'default',
+      'x-tenant-id': process.env.NEXT_PUBLIC_TENANT_ID || '00000000-0000-0000-0000-000000000001',
       ...options?.headers,
     },
   })

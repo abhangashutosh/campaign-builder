@@ -62,6 +62,8 @@ export function Step1Type() {
       setCurrentStep(2)
     } catch (err) {
       console.error('Step 1 save failed:', err)
+      // Still advance — state is in Zustand, API can be retried
+      setCurrentStep(2)
     } finally {
       setSaving(false)
     }

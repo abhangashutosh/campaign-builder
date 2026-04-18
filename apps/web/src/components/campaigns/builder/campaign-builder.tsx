@@ -28,7 +28,7 @@ export function CampaignBuilder() {
             <button
               key={step.n}
               className={`step${isActive ? ' active' : ''}${isDone ? ' done' : ''}`}
-              onClick={() => isDone && setCurrentStep(step.n)}
+              onClick={() => (isDone || isActive) && setCurrentStep(step.n)}
               style={{ width: '100%', background: 'none', border: 'none' }}
             >
               <span className="step-num">
