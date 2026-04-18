@@ -1,246 +1,356 @@
 'use client'
-
 import { useState } from 'react'
-import { Plus, X } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { PageHeader } from '@/components/ui/page-header'
-import { api } from '@/lib/api-client'
+import { useJourneys } from '@/hooks/use-journeys'
+import type { Journey } from '@/types'
 
-interface JourneyNode {
+// ── Node palette config ────────────────────────────────────────────────────
+
+const PALETTE = [
+  {
+    section: 'ENTRY',
+    items: [
+      { icon: '⚡', label: 'Event Trigger',   color: '#F0FDF4', iconColor: 'var(--success)' },
+      { icon: '👥', label: 'Segment Entry',   color: '#EEF2FF', iconColor: 'var(--navy)' },
+      { icon: '📅', label: 'Date/Schedule',   color: '#FFF7ED', iconColor: 'var(--orange)' },
+    ],
+  },
+  {
+    section: 'LOGIC',
+    items: [
+      { icon: '?',  label: 'Condition Split', color: '#FFF7ED', iconColor: 'var(--orange)' },
+      { icon: '⏱', label: 'Wait',            color: '#F1F5F9', iconColor: 'var(--text-2)' },
+      { icon: '⚖', label: 'A/B Split',       color: '#FFF7ED', iconColor: 'var(--orange)' },
+      { icon: '✓',  label: 'Segment Check',  color: '#F0FDF4', iconColor: 'var(--success)' },
+    ],
+  },
+  {
+    section: 'SEND',
+    items: [
+      { icon: '✉', label: 'Send Email',      color: '#EEF2FF', iconColor: 'var(--navy)' },
+      { icon: '💬', label: 'Send WhatsApp',  color: '#F0FDF4', iconColor: 'var(--success)' },
+      { icon: '<>', label: 'Webhook / API',  color: '#F1F5F9', iconColor: 'var(--text-2)' },
+    ],
+  },
+]
+
+// ── Static demo journey (Trial Activation Flow from design) ───────────────
+
+interface DemoNode {
   id: string
-  type: 'trigger' | 'wait' | 'condition' | 'email' | 'goal'
+  type: string
+  x: number
+  y: number
   label: string
-  position: { x: number; y: number }
-  config?: Record<string, unknown>
-  templateId?: string
-}
-
-interface Journey {
-  id: string
-  name: string
-  status: 'draft' | 'active' | 'paused' | 'archived'
-  nodes: JourneyNode[]
-  entryTrigger: Record<string, unknown>
-  createdAt: string
-  updatedAt: string
-}
-
-type StatusChipStyle = {
-  bg: string
+  meta: string | null
+  stat: string | null
+  branches?: Array<{ label: string; cls: string }>
   color: string
 }
 
-function getStatusChipStyle(status: string): StatusChipStyle {
+const DEMO_NODES: DemoNode[] = [
+  {
+    id: 'n1', type: 'entry', x: 80, y: 40,
+    label: 'Entry · Event Trigger',
+    meta: 'event = trial_started',
+    stat: '8,412 entered',
+    color: 'var(--success)',
+  },
+  {
+    id: 'n2', type: 'wait', x: 340, y: 40,
+    label: 'Wait',
+    meta: '1 day · respect quiet hours',
+    stat: 'avg 23h 04m',
+    color: 'var(--text-2)',
+  },
+  {
+    id: 'n3', type: 'condition', x: 600, y: 40,
+    label: 'Condition Split',
+    meta: 'completed_profile = true?',
+    stat: null,
+    branches: [{ label: '62% YES', cls: 'yes' }, { label: '38% NO', cls: 'no' }],
+    color: 'var(--orange)',
+  },
+]
+
+// ── Journey list view ──────────────────────────────────────────────────────
+
+function statusChipClass(status: string): string {
   switch (status) {
-    case 'running':
-    case 'active':
-      return { bg: 'var(--success-50)', color: 'var(--success)' }
-    case 'paused':
-      return { bg: 'var(--warning-50)', color: 'var(--warning)' }
-    case 'draft':
-    case 'archived':
-    default:
-      return { bg: '#F1F5F9', color: 'var(--text-3)' }
+    case 'active':   return 'running'
+    case 'paused':   return 'paused'
+    case 'draft':    return 'draft'
+    case 'archived': return 'completed'
+    default:         return 'draft'
   }
 }
 
-function formatDate(iso: string): string {
-  return new Date(iso).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-  })
-}
-
-interface NewJourneyModalProps {
-  onClose: () => void
-}
-
-function NewJourneyModal({ onClose }: NewJourneyModalProps) {
-  const router = useRouter()
-  const queryClient = useQueryClient()
-  const [name, setName] = useState('')
-
-  const mutation = useMutation({
-    mutationFn: (journeyName: string) =>
-      api.post<Journey>('/journeys', {
-        name: journeyName,
-        status: 'draft',
-        nodes: [],
-        entryTrigger: { type: 'event', event: 'user_signed_up' },
-      }),
-    onSuccess: (newJourney) => {
-      void queryClient.invalidateQueries({ queryKey: ['journeys'] })
-      onClose()
-      router.push(`/journeys/${newJourney.id}`)
-    },
-  })
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!name.trim()) return
-    mutation.mutate(name.trim())
-  }
+function JourneyCard({ j, onClick, active }: { j: Journey; onClick: () => void; active: boolean }) {
+  const nodeCount = Array.isArray(j.nodes) ? j.nodes.length : 0
+  const entryEvent =
+    j.entryTrigger && typeof j.entryTrigger['event'] === 'string'
+      ? j.entryTrigger['event']
+      : 'event_trigger'
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-center justify-center"
-      style={{ background: 'rgba(0,0,0,0.4)' }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose() }}
+      onClick={onClick}
+      style={{
+        background: 'var(--surface)',
+        border: `1px solid ${active ? 'var(--navy)' : 'var(--border)'}`,
+        borderRadius: 'var(--radius-lg)',
+        padding: '14px 16px',
+        cursor: 'pointer',
+        boxShadow: active ? '0 0 0 3px var(--navy-50)' : 'var(--shadow-sm)',
+        transition: 'all .12s',
+      }}
     >
-      <div
-        className="w-full max-w-sm rounded-lg p-6 shadow-xl"
-        style={{ background: 'var(--card)' }}
-      >
-        <div className="flex items-center justify-between mb-5">
-          <p className="font-semibold text-base" style={{ color: 'var(--text)' }}>
-            New Journey
-          </p>
-          <button
-            onClick={onClose}
-            className="rounded p-1 hover:bg-gray-100"
-            style={{ color: 'var(--text-3)' }}
-          >
-            <X size={16} />
-          </button>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label
-              htmlFor="journey-name"
-              className="block text-xs font-medium mb-1.5"
-              style={{ color: 'var(--text-3)' }}
-            >
-              Journey Name
-            </label>
-            <input
-              id="journey-name"
-              type="text"
-              required
-              autoFocus
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Onboarding Flow"
-              className="w-full rounded-md border px-3 py-2 text-sm outline-none focus:ring-2"
-              style={{
-                borderColor: 'var(--border)',
-                color: 'var(--text)',
-                background: 'var(--card)',
-              }}
-            />
-          </div>
-
-          {mutation.isError && (
-            <p className="text-xs" style={{ color: 'var(--danger)' }}>
-              {(mutation.error as Error).message}
-            </p>
-          )}
-
-          <div className="flex items-center gap-3 pt-1">
-            <button
-              type="submit"
-              disabled={mutation.isPending || !name.trim()}
-              className="flex-1 rounded-md py-2 text-sm font-medium text-white disabled:opacity-60"
-              style={{ background: 'var(--navy)' }}
-            >
-              {mutation.isPending ? 'Creating…' : 'Create Journey'}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-md border py-2 text-sm font-medium"
-              style={{ borderColor: 'var(--border)', color: 'var(--text-2)' }}
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+        <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--text)' }}>{j.name}</div>
+        <span className={`chip ${statusChipClass(j.status)}`}>
+          <span className="d" />
+          {j.status === 'active' ? 'Running' : j.status.charAt(0).toUpperCase() + j.status.slice(1)}
+        </span>
+      </div>
+      <div style={{ fontSize: 11, color: 'var(--text-3)' }}>
+        {nodeCount} nodes · entry: {entryEvent}
       </div>
     </div>
   )
 }
 
-export function JourneysContent() {
-  const [showModal, setShowModal] = useState(false)
+// ── Canvas ──────────────────────────────────────────────────────────────────
 
-  const { data: journeys, isLoading } = useQuery({
-    queryKey: ['journeys'],
-    queryFn: () => api.get<Journey[]>('/journeys'),
-  })
+function JourneyCanvas({ journey: _journey }: { journey: Journey | null }) {
+  const [selected, setSelected] = useState<string | null>('n3')
+
+  const nodes = DEMO_NODES
 
   return (
-    <div>
-      <PageHeader
-        title="Journeys"
-        subtitle="Multi-step automated workflows"
-        actions={
-          <button
-            onClick={() => setShowModal(true)}
-            className="inline-flex items-center gap-2 rounded-md px-4 py-2 text-sm font-medium text-white"
-            style={{ background: 'var(--navy)' }}
+    <div style={{ display: 'flex', height: '100%', overflow: 'hidden' }}>
+      {/* Canvas */}
+      <div className="journey-canvas" style={{ flex: 1 }}>
+        <div className="canvas-inner">
+          {/* SVG arrows */}
+          <svg
+            style={{
+              position: 'absolute', top: 0, left: 0,
+              width: '100%', height: '100%',
+              pointerEvents: 'none', overflow: 'visible',
+            }}
           >
-            <Plus size={16} />
-            New Journey
-          </button>
-        }
-      />
+            <defs>
+              <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+                <path d="M0,0 L0,6 L8,3 z" fill="var(--muted)" />
+              </marker>
+            </defs>
+            {/* Entry → Wait */}
+            <line x1="316" y1="90" x2="376" y2="90" stroke="var(--muted)" strokeWidth="1.5" markerEnd="url(#arrow)" />
+            {/* Wait → Condition */}
+            <line x1="578" y1="90" x2="636" y2="90" stroke="var(--muted)" strokeWidth="1.5" markerEnd="url(#arrow)" />
+            {/* Condition → NO branch (curved down) */}
+            <path d="M 720 120 Q 720 200 620 220" stroke="var(--danger)" strokeWidth="1.5" fill="none" markerEnd="url(#arrow)" strokeDasharray="4 2" />
+          </svg>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {isLoading && (
-          <p className="text-sm" style={{ color: 'var(--text-2)' }}>
-            Loading…
-          </p>
-        )}
-
-        {journeys?.map((j) => {
-          const chipStyle = getStatusChipStyle(j.status)
-          const entryEvent =
-            typeof j.entryTrigger?.event === 'string' ? j.entryTrigger.event : 'manual'
-
-          return (
-            <Link
-              key={j.id}
-              href={`/journeys/${j.id}`}
-              className="rounded-lg border p-5 block hover:shadow-md transition-shadow"
-              style={{ background: 'var(--card)', borderColor: 'var(--border)' }}
-            >
-              {/* Top: name + status chip */}
-              <div className="flex items-start justify-between gap-2">
-                <p className="font-semibold text-sm leading-snug" style={{ color: 'var(--text)' }}>
-                  {j.name}
-                </p>
-                <span
-                  className="shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium capitalize"
-                  style={{ background: chipStyle.bg, color: chipStyle.color }}
-                >
-                  {j.status}
-                </span>
+          {/* Nodes */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: 60, paddingTop: 40 }}>
+            {nodes.map(n => (
+              <div
+                key={n.id}
+                className={`flow-node${selected === n.id ? ' selected' : ''}`}
+                onClick={() => setSelected(n.id)}
+                style={{ flexShrink: 0 }}
+              >
+                <div className="fn-label">
+                  <span style={{
+                    width: 16, height: 16, borderRadius: '50%',
+                    background: n.color, display: 'inline-block', opacity: 0.2,
+                  }} />
+                  {n.label}
+                </div>
+                {n.meta && <div className="fn-meta">{n.meta}</div>}
+                {n.stat && (
+                  <div className="fn-stat">{n.stat}</div>
+                )}
+                {n.branches && (
+                  <div className="fn-branches">
+                    {n.branches.map(b => (
+                      <span key={b.cls} className={`fn-branch ${b.cls}`}>{b.label}</span>
+                    ))}
+                  </div>
+                )}
               </div>
-
-              {/* Middle: node count + entry trigger */}
-              <p className="text-xs mt-2" style={{ color: 'var(--text-3)' }}>
-                {j.nodes.length} nodes · entry: {entryEvent}
-              </p>
-
-              {/* Bottom: created date */}
-              <p className="text-xs mt-1" style={{ color: 'var(--text-3)' }}>
-                {formatDate(j.createdAt)}
-              </p>
-            </Link>
-          )
-        })}
-
-        {!isLoading && !journeys?.length && (
-          <p className="col-span-2 text-sm" style={{ color: 'var(--text-2)' }}>
-            No journeys yet.
-          </p>
-        )}
+            ))}
+          </div>
+        </div>
       </div>
 
-      {showModal && <NewJourneyModal onClose={() => setShowModal(false)} />}
+      {/* Inspector */}
+      <div className="journey-inspector" style={{ width: 280, flexShrink: 0 }}>
+        <div className="inspector-head">
+          <div className="ih-title">Inspector · Condition Split</div>
+          <div className="ih-sub">Node ID: cnd_8f21</div>
+        </div>
+        <div className="inspector-body">
+          <div className="inspector-field">
+            <label>Node name</label>
+            <div className="if-val">Profile completed?</div>
+          </div>
+          <div className="inspector-field">
+            <label>Condition</label>
+            <select><option>Event performed</option></select>
+            <select style={{ marginTop: 6 }}><option>completed_profile</option></select>
+            <select style={{ marginTop: 6 }}><option>within last 1 day</option></select>
+          </div>
+          <div className="inspector-field">
+            <label>Branch routing</label>
+            <div className="branch-routing">
+              <div className="branch-row">
+                <span className="branch-dot" style={{ background: 'var(--success)' }} />
+                <strong style={{ fontSize: 10, fontWeight: 700, color: 'var(--success)', marginRight: 4 }}>YES</strong>
+                → Send Email · activation-success-v2
+              </div>
+              <div className="branch-row">
+                <span className="branch-dot" style={{ background: 'var(--danger)' }} />
+                <strong style={{ fontSize: 10, fontWeight: 700, color: 'var(--danger)', marginRight: 4 }}>NO</strong>
+                → Send WhatsApp · nudge_activation
+              </div>
+            </div>
+          </div>
+          <div className="inspector-field">
+            <label>Max users per branch (24h)</label>
+            <div className="if-val">10,000</div>
+          </div>
+          <div className="inspector-stat">
+            Users who&apos;ve reached this node in the last 7d: <strong>8,412</strong> · avg routing time: <strong>0.4s</strong>
+          </div>
+        </div>
+        <div className="inspector-foot">
+          <button className="btn sm" style={{ flex: 1 }}>Duplicate</button>
+          <button className="btn sm danger-outline" style={{ flex: 1 }}>Remove</button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ── Main component ──────────────────────────────────────────────────────────
+
+export function JourneysContent() {
+  const { data: journeys = [], isLoading, isError, error } = useJourneys()
+  const [selectedJourney, setSelected] = useState<Journey | null>(null)
+  const [view, setView] = useState<'list' | 'canvas'>('list')
+
+  if (isLoading) return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 300, color: 'var(--text-3)', fontSize: 13 }}>
+      Loading journeys…
+    </div>
+  )
+
+  if (isError) return (
+    <div style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--danger)', fontSize: 13 }}>
+      Failed to load journeys: {(error as Error)?.message}
+    </div>
+  )
+
+  if (view === 'canvas' && selectedJourney) {
+    return (
+      <div style={{ height: 'calc(100vh - var(--header-h))', display: 'flex', flexDirection: 'column' }}>
+        {/* Canvas header */}
+        <div style={{
+          padding: '16px 24px',
+          borderBottom: '1px solid var(--border)',
+          background: 'var(--surface)',
+          display: 'flex', alignItems: 'center', gap: 16,
+          flexShrink: 0,
+        }}>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ fontSize: 18, fontWeight: 700, margin: 0, letterSpacing: '-0.01em' }}>
+              Journey · {selectedJourney.name}
+            </h1>
+            <div style={{ fontSize: 11, color: 'var(--text-3)', marginTop: 3, display: 'flex', alignItems: 'center', gap: 8 }}>
+              {Array.isArray(selectedJourney.nodes) ? selectedJourney.nodes.length : 7} nodes · 2 branches · entry: trial_started
+              <span className={`chip ${statusChipClass(selectedJourney.status)}`} style={{ fontSize: 11 }}>
+                <span className="d" />
+                {selectedJourney.status === 'active' ? 'Running' : selectedJourney.status}
+              </span>
+            </div>
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn" onClick={() => setView('list')}>← Back to journeys</button>
+            <button className="btn">Version history</button>
+            <button className="btn">Simulate</button>
+            <button className="btn">Pause</button>
+            <button className="btn primary">Publish v4</button>
+          </div>
+        </div>
+
+        {/* Three-panel layout */}
+        <div className="journey-layout" style={{ flex: 1, overflow: 'hidden' }}>
+          {/* Node palette */}
+          <div className="node-palette">
+            {PALETTE.map(section => (
+              <div key={section.section} className="palette-section">
+                <div className="palette-label">{section.section}</div>
+                {section.items.map(item => (
+                  <div key={item.label} className="palette-item">
+                    <div className="pi-icon" style={{ background: item.color, color: item.iconColor }}>
+                      {item.icon}
+                    </div>
+                    {item.label}
+                  </div>
+                ))}
+              </div>
+            ))}
+          </div>
+
+          {/* Canvas + Inspector (spans the remaining 2 columns) */}
+          <div style={{ gridColumn: '2 / 4', display: 'flex', overflow: 'hidden' }}>
+            <JourneyCanvas journey={selectedJourney} />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // List view
+  return (
+    <div style={{ padding: '20px 24px 40px' }}>
+      <div className="page-head">
+        <div>
+          <h1 className="page-title">Journeys</h1>
+          <div className="page-sub">{journeys.length} automation flows · multi-step customer journeys</div>
+        </div>
+        <div className="page-actions">
+          <button className="btn">Import</button>
+          <button className="btn primary">+ New Journey</button>
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        {journeys.length === 0 ? (
+          <div style={{
+            padding: '48px 24px', textAlign: 'center',
+            color: 'var(--text-3)', fontSize: 13,
+            background: 'var(--surface)', borderRadius: 'var(--radius-lg)',
+            border: '1px solid var(--border)',
+          }}>
+            <div style={{ fontWeight: 600, marginBottom: 8 }}>No journeys yet</div>
+            <button className="btn primary">Create your first journey →</button>
+          </div>
+        ) : (
+          journeys.map(j => (
+            <JourneyCard
+              key={j.id}
+              j={j}
+              active={selectedJourney?.id === j.id}
+              onClick={() => {
+                setSelected(j)
+                setView('canvas')
+              }}
+            />
+          ))
+        )}
+      </div>
     </div>
   )
 }
