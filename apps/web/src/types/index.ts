@@ -1,6 +1,6 @@
 export type CampaignType = 'one_time' | 'scheduled' | 'recurring' | 'triggered' | 'transactional' | 'journey' | 'api_triggered'
 export type CampaignStatus = 'draft' | 'scheduled' | 'running' | 'paused' | 'completed' | 'failed' | 'needs_review'
-export type ChannelType = 'email' | 'whatsapp'
+export type ChannelType = 'email' | 'whatsapp' | 'push' | 'sms' | 'inapp' | 'webpush'
 
 export interface Campaign {
   id: string
@@ -46,6 +46,7 @@ export interface Template {
   category: string
   variables: string[]
   createdAt: string
+  updatedAt?: string
 }
 
 export interface OverviewStats {
@@ -60,7 +61,9 @@ export interface Journey {
   name: string
   status: string
   nodes: unknown[]
+  entryTrigger?: Record<string, unknown>
   createdAt: string
+  updatedAt?: string
 }
 
 export interface DomainCheckResult {
