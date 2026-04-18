@@ -1,76 +1,52 @@
 'use client'
 
 import { Search, HelpCircle, Bell } from 'lucide-react'
+import { usePathname } from 'next/navigation'
+
+const CRUMB_MAP: Record<string, string> = {
+  '/overview':  'Overview',
+  '/audience':  'Audience',
+  '/templates': 'Templates',
+  '/campaigns': 'Campaigns',
+  '/journeys':  'Journeys',
+  '/reports':   'Reports',
+  '/settings':  'Settings',
+}
 
 export function Header() {
+  const pathname = usePathname()
+  const crumb = CRUMB_MAP[pathname] ?? CRUMB_MAP[Object.keys(CRUMB_MAP).find(k => pathname.startsWith(k)) ?? ''] ?? 'Page'
+
   return (
-    <header
-      className="flex h-14 items-center justify-between border-b px-6"
-      style={{ background: 'var(--card)', borderColor: 'var(--border)' }}
-    >
-      {/* Left: Search */}
-      <div className="relative w-64">
-        <Search
-          size={14}
-          className="absolute left-2.5 top-1/2 -translate-y-1/2"
-          style={{ color: 'var(--text-3)' }}
-        />
-        <input
-          type="text"
-          placeholder="Search  ⌘K"
-          className="w-full rounded border pl-8 pr-3 py-1.5 text-sm outline-none focus:ring-1"
-          style={{
-            background: 'var(--bg)',
-            borderColor: 'var(--border)',
-            color: 'var(--text)',
-          }}
-          readOnly
-        />
+    <header className="header">
+      {/* Breadcrumbs */}
+      <div className="crumbs">
+        <span>Engage</span>
+        <span className="sep">/</span>
+        <span className="cur">{crumb}</span>
       </div>
 
-      {/* Right: actions + user */}
-      <div className="flex items-center gap-2">
-        {/* Help */}
-        <button
-          className="rounded-md p-1.5 hover:bg-gray-100"
-          aria-label="Help"
-        >
-          <HelpCircle size={18} style={{ color: 'var(--text-2)' }} />
+      {/* Search */}
+      <div className="search" style={{ marginLeft: 0 }}>
+        <Search size={14} />
+        <input type="text" placeholder="Search campaigns, segments, templates…" readOnly />
+        <span className="kbd">⌘K</span>
+      </div>
+
+      {/* Right actions */}
+      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <button className="icon-btn" aria-label="Help">
+          <HelpCircle size={16} />
         </button>
-
-        {/* Notifications */}
-        <button
-          className="relative rounded-md p-1.5 hover:bg-gray-100"
-          aria-label="Notifications"
-        >
-          <Bell size={18} style={{ color: 'var(--text-2)' }} />
-          <span
-            className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full"
-            style={{ background: 'var(--danger)' }}
-          />
+        <button className="icon-btn" aria-label="Notifications">
+          <Bell size={16} />
+          <span className="dot" />
         </button>
-
-        {/* Divider */}
-        <div
-          className="h-6 w-px mx-1"
-          style={{ background: 'var(--border)' }}
-        />
-
-        {/* User */}
-        <div className="flex items-center gap-2">
-          <div
-            className="flex h-8 w-8 items-center justify-center rounded-full text-white text-sm font-medium flex-shrink-0"
-            style={{ background: 'var(--navy)' }}
-          >
-            P
-          </div>
-          <div className="hidden sm:flex flex-col leading-tight">
-            <span className="text-sm font-medium" style={{ color: 'var(--text)' }}>
-              Priya Raman
-            </span>
-            <span className="text-xs" style={{ color: 'var(--text-3)' }}>
-              Marketing Lead
-            </span>
+        <div className="user-menu">
+          <div className="avatar" style={{ background: 'var(--navy)', color: '#fff', width: 28, height: 28, fontSize: 12, fontWeight: 700 }}>PR</div>
+          <div>
+            <div className="who">Priya Raman</div>
+            <div className="role">Marketing Lead</div>
           </div>
         </div>
       </div>

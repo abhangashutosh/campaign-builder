@@ -3,11 +3,11 @@ import { Header } from './header'
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
-    <div className="flex h-screen overflow-hidden" style={{ background: 'var(--bg)' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'var(--sidebar-w) 1fr', minHeight: '100vh' }}>
       <Sidebar />
-      <div className="flex flex-1 flex-col overflow-hidden">
+      <div className="main">
         <Header />
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main style={{ flex: 1, overflowY: 'auto' }}>{children}</main>
       </div>
     </div>
   )
