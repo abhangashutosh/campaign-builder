@@ -1,184 +1,433 @@
 'use client'
-
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { useCampaignBuilderStore } from '@/store/campaign-builder.store'
-import { useCampaignReadiness, usePublishCampaign, useCampaign } from '@/hooks/use-campaigns'
-import { CheckCircle, AlertCircle, XCircle } from 'lucide-react'
-
-interface Approver {
-  name: string
-  role: string
-  status: 'approved' | 'pending'
-}
-
-const APPROVERS: Approver[] = [
-  { name: 'Priya Raman', role: 'Marketing Lead', status: 'approved' },
-  { name: 'Rahul Joshi', role: 'Compliance', status: 'pending' },
-]
+import { useCampaignReadiness, usePublishCampaign, useSendTest } from '@/hooks/use-campaigns'
+import { Check, AlertTriangle, X, Send } from 'lucide-react'
+import { Panel } from '@/components/ui/panel'
 
 export function Step5Review() {
-  const { campaignId, step1, setCurrentStep, reset } = useCampaignBuilderStore()
-  const { data: readiness } = useCampaignReadiness(campaignId ?? '')
-  const { data: campaign } = useCampaign(campaignId ?? '')
-  const publishMutation = usePublishCampaign()
+  const router = useRouter()
+  const { campaignId, step1, step2, step3, step4, setCurrentStep, reset } = useCampaignBuilderStore()
 
-  const canPublish = readiness?.ready ?? false
-  const campaignVersion = campaign?.version ?? 1
+  const { data: readiness } = useCampaignReadiness(campaignId ?? '')
+  const publishCampaign = usePublishCampaign()
+  const sendTest = useSendTest()
+
+  const [testEmail, setTestEmail] = useState('')
+  const [testSent, setTestSent] = useState(false)
+  const [testError, setTestError] = useState(false)
+  const [previewChannel, setPreviewChannel] = useState<string>(
+    step1.channels?.[0] ?? 'email'
+  )
+
+  const score    = readiness?.score ?? 75
+  const ready    = readiness?.ready ?? false
+  const blockers = readiness?.blockers ?? []
+  const warnings = readiness?.warnings ?? []
+
+  async function handleSendTest() {
+    if (!campaignId || !testEmail) return
+    setTestError(false)
+    setTestSent(false)
+    try {
+      await sendTest.mutateAsync({ id: campaignId, testEmail })
+      setTestSent(true)
+    } catch {
+      setTestError(true)
+    }
+  }
 
   async function handlePublish() {
     if (!campaignId) return
-    await publishMutation.mutateAsync(campaignId)
-    reset()
-    window.location.href = '/campaigns'
+    try {
+      await publishCampaign.mutateAsync(campaignId)
+      reset()
+      router.push('/campaigns')
+    } catch (err) {
+      console.error('Publish failed:', err)
+    }
   }
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Review &amp; Publish</h2>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-2)' }}>Check your campaign before going live</p>
-      </div>
+  const scoreColor =
+    score >= 80 ? 'var(--success)' : score >= 50 ? 'var(--warning, #F59E0B)' : 'var(--danger)'
 
-      {/* Readiness Score */}
-      {readiness && (
-        <div>
-          <div className="flex items-center justify-between mb-3">
-            <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>Readiness Score</p>
-            <span
-              className="text-2xl font-bold"
+  const SUMMARY = [
+    {
+      step: 1,
+      title: 'Campaign Setup',
+      items: [
+        { label: 'Name',     value: step1.name || '—' },
+        { label: 'Type',     value: step1.type ? step1.type.replace(/_/g, ' ') : '—' },
+        { label: 'Channels', value: step1.channels?.join(' + ') || '—' },
+      ],
+    },
+    {
+      step: 2,
+      title: 'Audience',
+      items: [
+        { label: 'Segment', value: step2.audienceSegmentId || '—' },
+      ],
+    },
+    {
+      step: 3,
+      title: 'Message',
+      items: [
+        { label: 'Subject',  value: step3.subject || '—' },
+        { label: 'Template', value: step3.templateId || '—' },
+        { label: 'Sender',   value: step3.senderEmail || '—' },
+      ],
+    },
+    {
+      step: 4,
+      title: 'Delivery',
+      items: [
+        {
+          label: 'Schedule',
+          value: step4.scheduledFor
+            ? new Date(step4.scheduledFor).toLocaleString()
+            : step4.stoEnabled
+              ? 'Smart Time Optimization'
+              : 'Send now',
+        },
+        { label: 'Rate limit', value: step4.rateLimit === 'none' ? 'No limit' : step4.rateLimit === 'unlimited' ? 'Unlimited' : `${step4.rateLimit}/s` },
+      ],
+    },
+  ]
+
+  return (
+    <div className="builder">
+      {/* LEFT: Summary */}
+      <Panel title="Campaign Summary" subtitle="Review all settings before publishing">
+        {SUMMARY.map(({ step, title, items }) => (
+          <div
+            key={step}
+            style={{ borderBottom: '1px solid var(--border)', paddingBottom: 12, marginBottom: 12 }}
+          >
+            <div
               style={{
-                color:
-                  readiness.score >= 80
-                    ? 'var(--success)'
-                    : readiness.score >= 50
-                    ? 'var(--warning)'
-                    : 'var(--danger)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                marginBottom: 6,
               }}
             >
-              {readiness.score}/100
-            </span>
+              <div
+                style={{
+                  fontSize: 11,
+                  fontWeight: 700,
+                  color: 'var(--text-2)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.04em',
+                }}
+              >
+                Step {step}: {title}
+              </div>
+              <button
+                onClick={() => setCurrentStep(step)}
+                style={{
+                  fontSize: 11,
+                  color: 'var(--navy)',
+                  fontWeight: 600,
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                }}
+              >
+                Edit
+              </button>
+            </div>
+            {items.map(({ label, value }) => (
+              <div
+                key={label}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: 12,
+                  marginBottom: 3,
+                }}
+              >
+                <span style={{ color: 'var(--text-2)' }}>{label}</span>
+                <span style={{ color: 'var(--text)', fontWeight: 600, maxWidth: '60%', textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {value}
+                </span>
+              </div>
+            ))}
           </div>
-          <div className="w-full rounded-full h-2 mb-4" style={{ background: 'var(--border)' }}>
-            <div
-              className="h-2 rounded-full transition-all"
+        ))}
+
+        {blockers.length > 0 && (
+          <div style={{ marginTop: 4 }}>
+            {blockers.map((b) => (
+              <div key={b} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, marginBottom: 4 }}>
+                <X size={12} color="var(--danger)" />
+                <span style={{ color: 'var(--danger)' }}>{b}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {warnings.length > 0 && (
+          <div style={{ marginTop: 4 }}>
+            {warnings.map((w) => (
+              <div key={w} style={{ display: 'flex', gap: 8, alignItems: 'center', fontSize: 12, marginBottom: 4 }}>
+                <AlertTriangle size={12} color="var(--warning, #F59E0B)" />
+                <span style={{ color: 'var(--warning, #F59E0B)' }}>{w}</span>
+              </div>
+            ))}
+          </div>
+        )}
+      </Panel>
+
+      {/* MIDDLE: Preview & Send Test */}
+      <Panel title="Preview & Simulation">
+        {/* Channel tab switcher */}
+        {step1.channels && step1.channels.length > 1 && (
+          <div
+            style={{
+              display: 'flex',
+              gap: 4,
+              marginBottom: 14,
+              background: 'var(--bg)',
+              borderRadius: 'var(--radius-md)',
+              padding: 4,
+            }}
+          >
+            {step1.channels.map((ch: string) => (
+              <button
+                key={ch}
+                onClick={() => setPreviewChannel(ch)}
+                style={{
+                  flex: 1,
+                  padding: '6px 0',
+                  borderRadius: 'var(--radius-sm)',
+                  border: 'none',
+                  cursor: 'pointer',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  background: previewChannel === ch ? 'var(--navy)' : 'transparent',
+                  color: previewChannel === ch ? '#fff' : 'var(--text-2)',
+                }}
+              >
+                {ch === 'email' ? 'Email' : ch === 'whatsapp' ? 'WhatsApp' : ch}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Inbox preview */}
+        <div
+          style={{
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            overflow: 'hidden',
+            marginBottom: 16,
+          }}
+        >
+          <div
+            style={{
+              background: 'var(--bg)',
+              padding: '8px 12px',
+              borderBottom: '1px solid var(--border)',
+              fontSize: 11,
+              color: 'var(--text-2)',
+            }}
+          >
+            <div><strong>From:</strong> {step3.senderEmail || 'campaigns@example.com'}</div>
+            <div><strong>Subject:</strong> {step3.subject || '(no subject)'}</div>
+            {step3.preheader && (
+              <div style={{ color: 'var(--text-2)', opacity: 0.7, marginTop: 2 }}>{step3.preheader}</div>
+            )}
+          </div>
+          <div style={{ padding: 16, fontSize: 13, color: 'var(--text-2)', minHeight: 80 }}>
+            {step3.templateId
+              ? `Template "${step3.templateId}" will be rendered here.`
+              : 'Select a template in Step 3 to preview email content.'}
+          </div>
+        </div>
+
+        {/* Send test */}
+        <div
+          style={{
+            border: '1px solid var(--border)',
+            borderRadius: 'var(--radius-md)',
+            padding: 12,
+          }}
+        >
+          <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)', marginBottom: 8 }}>
+            Send Test Email
+          </div>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <input
+              type="email"
+              placeholder="test@example.com"
+              className="input"
+              style={{ flex: 1 }}
+              value={testEmail}
+              onChange={(e) => {
+                setTestEmail(e.target.value)
+                setTestSent(false)
+                setTestError(false)
+              }}
+            />
+            <button
+              disabled={!testEmail || sendTest.isPending || !campaignId}
+              onClick={handleSendTest}
               style={{
-                width: `${readiness.score}%`,
-                background:
-                  readiness.score >= 80
-                    ? 'var(--success)'
-                    : readiness.score >= 50
-                    ? 'var(--warning)'
-                    : 'var(--danger)',
+                padding: '7px 12px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--navy)',
+                color: '#fff',
+                fontSize: 12,
+                fontWeight: 600,
+                border: 'none',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: 6,
+                opacity: !testEmail || !campaignId ? 0.5 : 1,
+              }}
+            >
+              <Send size={12} />
+              {sendTest.isPending ? '…' : 'Send'}
+            </button>
+          </div>
+          {testSent && (
+            <div style={{ fontSize: 11, color: 'var(--success)', marginTop: 4 }}>
+              Test email sent successfully
+            </div>
+          )}
+          {testError && (
+            <div style={{ fontSize: 11, color: 'var(--danger)', marginTop: 4 }}>
+              Failed to send test email
+            </div>
+          )}
+        </div>
+      </Panel>
+
+      {/* RIGHT: Readiness Score + Launch */}
+      <Panel title="Approval & Launch">
+        {/* Readiness score gauge */}
+        <div style={{ textAlign: 'center', padding: '16px 0 20px' }}>
+          <div style={{ fontSize: 48, fontWeight: 800, color: scoreColor, lineHeight: 1 }}>
+            {score}
+          </div>
+          <div style={{ fontSize: 12, color: 'var(--text-2)', marginTop: 4 }}>/ 100 readiness score</div>
+          <div
+            style={{
+              margin: '10px auto 0',
+              height: 6,
+              background: 'var(--border)',
+              borderRadius: 3,
+              width: '80%',
+            }}
+          >
+            <div
+              style={{
+                height: '100%',
+                background: scoreColor,
+                borderRadius: 3,
+                width: `${score}%`,
+                transition: 'width 0.4s',
               }}
             />
           </div>
-
-          {readiness.blockers.length > 0 && (
-            <div className="mb-3">
-              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--danger)' }}>BLOCKERS</p>
-              {readiness.blockers.map((b) => (
-                <div key={b} className="flex items-center gap-2 text-sm mb-1">
-                  <XCircle size={14} style={{ color: 'var(--danger)' }} />
-                  <span style={{ color: 'var(--text)' }}>{b}</span>
-                </div>
-              ))}
-            </div>
-          )}
-
-          {readiness.warnings.length > 0 && (
-            <div>
-              <p className="text-xs font-semibold mb-2" style={{ color: 'var(--warning)' }}>WARNINGS</p>
-              {readiness.warnings.map((w) => (
-                <div key={w} className="flex items-center gap-2 text-sm mb-1">
-                  <AlertCircle size={14} style={{ color: 'var(--warning)' }} />
-                  <span style={{ color: 'var(--text)' }}>{w}</span>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Approval Queue */}
-      <div
-        className="rounded-lg border p-4"
-        style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
-      >
-        <p className="text-sm font-semibold mb-3" style={{ color: 'var(--text)' }}>Approval Queue</p>
-        {APPROVERS.map((a) => (
-          <div key={a.name} className="flex items-center justify-between mb-2 last:mb-0">
-            <div className="flex items-center gap-2">
-              <div
-                className="w-7 h-7 rounded-full flex items-center justify-center text-white text-xs font-semibold flex-shrink-0"
-                style={{ background: 'var(--navy)' }}
-              >
-                {a.name[0]}
-              </div>
-              <div>
-                <p className="text-sm font-medium" style={{ color: 'var(--text)' }}>{a.name}</p>
-                <p className="text-xs" style={{ color: 'var(--text-3)' }}>{a.role}</p>
-              </div>
-            </div>
-            <span
-              className="rounded-full px-2 py-0.5 text-xs font-medium"
-              style={{
-                background: a.status === 'approved' ? 'var(--success-50)' : 'var(--warning-50)',
-                color: a.status === 'approved' ? 'var(--success)' : 'var(--warning)',
-              }}
-            >
-              {a.status === 'approved' ? 'Approved' : 'Pending'}
-            </span>
+          <div style={{ fontSize: 11, color: scoreColor, marginTop: 8, fontWeight: 600 }}>
+            {score >= 80 ? 'Ready to launch' : score >= 50 ? 'Needs attention' : 'Not ready'}
           </div>
-        ))}
-      </div>
+        </div>
 
-      {/* Campaign Summary */}
-      <div
-        className="rounded-lg border p-4 space-y-2 text-sm"
-        style={{ borderColor: 'var(--border)', background: 'var(--card)' }}
-      >
-        <p>
-          <span style={{ color: 'var(--text-2)' }}>Name: </span>
-          <span className="font-medium" style={{ color: 'var(--text)' }}>{step1.name}</span>
-        </p>
-        <p>
-          <span style={{ color: 'var(--text-2)' }}>Type: </span>
-          <span style={{ color: 'var(--text)' }}>{step1.type}</span>
-        </p>
-        <p>
-          <span style={{ color: 'var(--text-2)' }}>Channels: </span>
-          <span style={{ color: 'var(--text)' }}>{step1.channels.join(', ')}</span>
-        </p>
-      </div>
+        {/* Readiness checks derived from blockers/warnings */}
+        {(blockers.length > 0 || warnings.length > 0) && (
+          <div style={{ marginBottom: 16 }}>
+            {blockers.map((b) => (
+              <div key={b} className="checklist-item">
+                <X size={14} color="var(--danger)" />
+                <span style={{ fontSize: 12, color: 'var(--danger)' }}>{b}</span>
+              </div>
+            ))}
+            {warnings.map((w) => (
+              <div key={w} className="checklist-item">
+                <AlertTriangle size={14} color="var(--warning, #F59E0B)" />
+                <span style={{ fontSize: 12, color: 'var(--text-2)' }}>{w}</span>
+              </div>
+            ))}
+          </div>
+        )}
 
-      <div className="flex justify-between pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-        <button
-          onClick={() => setCurrentStep(4)}
-          className="rounded-md border px-6 py-2 text-sm font-medium"
-          style={{ borderColor: 'var(--border)', color: 'var(--text-2)' }}
-        >
-          Back
-        </button>
+        {/* Static passing checks when no readiness data yet */}
+        {!readiness && (
+          <div style={{ marginBottom: 16 }}>
+            {[
+              { label: 'Campaign name set', passed: !!step1.name },
+              { label: 'Channel selected', passed: step1.channels.length > 0 },
+              { label: 'Audience configured', passed: !!step2.audienceSegmentId },
+              { label: 'Message drafted', passed: !!step3.subject },
+            ].map((c) => (
+              <div key={c.label} className="checklist-item">
+                {c.passed
+                  ? <Check size={14} color="var(--success)" />
+                  : <AlertTriangle size={14} color="var(--warning, #F59E0B)" />}
+                <span style={{ fontSize: 12, color: c.passed ? 'var(--text)' : 'var(--text-2)' }}>
+                  {c.label}
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
 
-        {/* Dual Launch Buttons */}
-        <div className="flex gap-3">
+        {/* Launch buttons */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
           <button
-            disabled={!canPublish}
+            disabled={publishCampaign.isPending || (!!readiness && !ready)}
             onClick={handlePublish}
-            className="rounded-md border px-4 py-2 text-sm font-medium disabled:opacity-40 transition-opacity"
-            style={{ borderColor: 'var(--navy)', color: 'var(--navy)', background: 'white' }}
+            style={{
+              width: '100%',
+              padding: '11px 16px',
+              borderRadius: 'var(--radius-md)',
+              background: 'var(--navy)',
+              color: '#fff',
+              fontSize: 14,
+              fontWeight: 700,
+              border: 'none',
+              cursor: publishCampaign.isPending ? 'wait' : 'pointer',
+              opacity: publishCampaign.isPending || (!!readiness && !ready) ? 0.6 : 1,
+            }}
           >
-            Schedule Launch
+            {publishCampaign.isPending ? 'Publishing…' : 'Launch Now'}
           </button>
           <button
-            disabled={!canPublish}
-            onClick={handlePublish}
-            className="rounded-md px-4 py-2 text-sm font-medium text-white disabled:opacity-40 transition-opacity"
-            style={{ background: 'var(--navy)' }}
+            onClick={() => setCurrentStep(4)}
+            style={{
+              width: '100%',
+              padding: '9px 16px',
+              borderRadius: 'var(--radius-md)',
+              border: '1px solid var(--border)',
+              background: 'transparent',
+              color: 'var(--text-2)',
+              fontSize: 12,
+              cursor: 'pointer',
+            }}
           >
-            Launch Now · v{campaignVersion + 1}
+            ← Back
+          </button>
+          <button
+            onClick={() => router.push('/campaigns')}
+            style={{
+              textAlign: 'center',
+              width: '100%',
+              fontSize: 11,
+              color: 'var(--text-2)',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '4px 0',
+            }}
+          >
+            Save as Draft
           </button>
         </div>
-      </div>
+      </Panel>
     </div>
   )
 }

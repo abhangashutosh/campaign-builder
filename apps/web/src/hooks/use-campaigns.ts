@@ -42,6 +42,14 @@ export function usePublishCampaign() {
   })
 }
 
+export function usePauseCampaign() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) => api.post<Campaign>(`/campaigns/${id}/pause`),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['campaigns'] }),
+  })
+}
+
 export function useCampaignReadiness(id: string) {
   return useQuery({
     queryKey: ['campaigns', id, 'readiness'],
@@ -58,5 +66,12 @@ export function useCampaignReports(id: string) {
       failureBreakdown: { hardBounce: number; spamComplaint: number; invalidAddress: number }
     }>(`/campaigns/${id}/reports`),
     enabled: !!id,
+  })
+}
+
+export function useSendTest() {
+  return useMutation({
+    mutationFn: ({ id, testEmail }: { id: string; testEmail: string }) =>
+      api.post<{ messageId: string }>(`/campaigns/${id}/send-test`, { testEmail }),
   })
 }
