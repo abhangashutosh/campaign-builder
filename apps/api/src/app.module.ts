@@ -11,6 +11,8 @@ import { TemplatesModule } from './templates/templates.module'
 import { CampaignsModule } from './campaigns/campaigns.module'
 import { JourneysModule } from './journeys/journeys.module'
 import { SettingsModule } from './settings/settings.module'
+import { QueueModule } from './queue/queue.module'
+import { OverviewModule } from './overview/overview.module'
 import { EventsGateway } from './events/events.gateway'
 import * as Joi from 'joi'
 
@@ -50,6 +52,8 @@ import * as Joi from 'joi'
     CampaignsModule,
     JourneysModule,
     SettingsModule,
+    QueueModule,
+    OverviewModule,
   ],
   providers: [EventsGateway],
 })

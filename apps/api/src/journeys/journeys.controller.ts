@@ -28,4 +28,9 @@ export class JourneysController {
   update(@TenantId() tenantId: string, @Param('id') id: string, @Body() body: Partial<Journey>) {
     return this.service.update(tenantId, id, body)
   }
+
+  @Post(':id/publish')
+  publish(@TenantId() tenantId: string, @Param('id') id: string) {
+    return this.service.publish(tenantId, id)
+  }
 }

@@ -37,6 +37,18 @@ export abstract class TenantScopedRepository<T extends { tenantId: string; delet
     return entity
   }
 
+  async create(tenantId: string, data: Partial<T>): Promise<T> {
+    this.assertTenant(tenantId)
+    const entity = this.repo.create({ ...data, tenantId } as unknown as T)
+    return this.repo.save(entity)
+  }
+
+  async update(tenantId: string, id: string, data: Partial<T>): Promise<T> {
+    const entity = await this.findOneOrFail(tenantId, id)
+    Object.assign(entity, data)
+    return this.repo.save(entity)
+  }
+
   async softDelete(tenantId: string, id: string): Promise<void> {
     this.assertTenant(tenantId)
     const entity = await this.findOneOrFail(tenantId, id)
