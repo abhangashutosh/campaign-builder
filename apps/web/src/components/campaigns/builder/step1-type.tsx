@@ -1,171 +1,157 @@
 'use client'
-
+import { useState } from 'react'
+import { Mail, MessageSquare, Zap, RefreshCw, Send, GitBranch, Clock, Radio } from 'lucide-react'
 import { useCampaignBuilderStore } from '@/store/campaign-builder.store'
+import { useCreateCampaign } from '@/hooks/use-campaigns'
+import { Panel } from '@/components/ui/panel'
+import { TagInput } from '@/components/ui/tag-input'
+import { ToggleSwitch } from '@/components/ui/toggle-switch'
+import { TypeCard } from './step1/type-card'
+import { ChannelToggleCard } from './step1/channel-toggle-card'
+import { GuidePanel } from './step1/guide-panel'
 import type { CampaignType, ChannelType } from '@/types'
+import type { LucideIcon } from 'lucide-react'
 
-const CAMPAIGN_TYPES: { type: CampaignType; label: string; description: string }[] = [
-  { type: 'one_time', label: 'One-time', description: 'Send once to a segment' },
-  { type: 'recurring', label: 'Recurring', description: 'Repeat on a schedule' },
-  { type: 'triggered', label: 'Triggered', description: 'Fire on user behavior' },
-  { type: 'transactional', label: 'Transactional', description: 'Receipts, OTPs, alerts — bypass marketing consent' },
-  { type: 'journey', label: 'Journey', description: 'Multi-step path with branches, waits and conditions' },
-  { type: 'api_triggered', label: 'API-triggered', description: 'Send via REST API on demand from your backend' },
+const CAMPAIGN_TYPES: { type: CampaignType; label: string; Icon: LucideIcon; description: string }[] = [
+  { type: 'one_time',      label: 'One-time',      Icon: Send,      description: 'Send to a static audience immediately or on a date' },
+  { type: 'recurring',     label: 'Recurring',     Icon: RefreshCw, description: 'Daily, weekly, or monthly cadence' },
+  { type: 'triggered',     label: 'Triggered',     Icon: Zap,       description: 'Fires when a user performs an event' },
+  { type: 'transactional', label: 'Transactional', Icon: Clock,     description: 'Receipts, OTPs — bypasses consent' },
+  { type: 'journey',       label: 'Journey',       Icon: GitBranch, description: 'Multi-step automated path with branches' },
+  { type: 'api_triggered', label: 'API-triggered', Icon: Radio,     description: 'Triggered via REST API from your backend' },
 ]
 
-const STARTING_TEMPLATES = [
-  { id: 'welcome', label: 'Welcome Series' },
-  { id: 'cart', label: 'Cart Abandonment' },
-  { id: 'reengagement', label: 'Re-engagement' },
-  { id: 'blank', label: 'Blank Canvas' },
-  { id: 'transactional_receipt', label: 'Transactional Receipt' },
+const CHANNELS: { channel: ChannelType; label: string; description: string; Icon: LucideIcon }[] = [
+  { channel: 'email',    label: 'Email',    description: 'Rich HTML messages with tracking', Icon: Mail },
+  { channel: 'whatsapp', label: 'WhatsApp', description: 'Approved templates with variables', Icon: MessageSquare },
 ]
 
-const CHANNELS: { value: ChannelType; label: string }[] = [
-  { value: 'email', label: 'Email' },
-  { value: 'whatsapp', label: 'WhatsApp' },
-]
+const WORKSPACES = ['Product · Growth', 'Marketing', 'Sales', 'Support', 'Engineering']
 
 export function Step1Type() {
-  const { step1, updateStep1, setCurrentStep } = useCampaignBuilderStore()
+  const { step1, updateStep1, campaignId, setCampaignId, setCurrentStep } = useCampaignBuilderStore()
+  const createCampaign = useCreateCampaign()
+  const [saving, setSaving] = useState(false)
 
-  const toggleChannel = (ch: ChannelType) => {
-    const has = step1.channels.includes(ch)
-    updateStep1({ channels: has ? step1.channels.filter((c) => c !== ch) : [...step1.channels, ch] })
+  const canContinue = !!step1.name.trim() && !!step1.type && step1.channels.length > 0
+
+  function toggleChannel(channel: ChannelType) {
+    const next = step1.channels.includes(channel)
+      ? step1.channels.filter((c) => c !== channel)
+      : [...step1.channels, channel]
+    updateStep1({ channels: next })
   }
 
-  const canContinue = step1.name.trim() && step1.type && step1.channels.length > 0
+  async function handleContinue() {
+    if (!canContinue) return
+    setSaving(true)
+    try {
+      if (!campaignId) {
+        const campaign = await createCampaign.mutateAsync({
+          name: step1.name,
+          type: step1.type as CampaignType,
+          channels: step1.channels,
+          description: step1.description || undefined,
+          tags: step1.tags || [],
+          abTestEnabled: step1.abTestEnabled || false,
+          workspace: step1.workspace,
+          folder: step1.folder || undefined,
+        })
+        setCampaignId(campaign.id)
+      }
+      setCurrentStep(2)
+    } catch (err) {
+      console.error('Step 1 save failed:', err)
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-lg font-semibold" style={{ color: 'var(--text)' }}>Campaign Details</h2>
-        <p className="text-sm mt-1" style={{ color: 'var(--text-2)' }}>Start by choosing a type and naming your campaign</p>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Campaign Name *</label>
-        <input
-          className="w-full rounded border px-3 py-2 text-sm outline-none focus:ring-2"
-          style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-          placeholder="e.g. Summer Re-engagement"
-          value={step1.name}
-          onChange={(e) => updateStep1({ name: e.target.value })}
-        />
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text)' }}>Campaign Type *</label>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-          {CAMPAIGN_TYPES.map(({ type, label, description }) => (
-            <button
-              key={type}
-              onClick={() => updateStep1({ type })}
-              className="rounded-lg border p-3 text-left transition-all"
-              style={{
-                borderColor: step1.type === type ? 'var(--navy)' : 'var(--border)',
-                background: step1.type === type ? 'var(--navy-50)' : 'var(--card)',
-              }}
-            >
-              <p className="text-sm font-medium" style={{ color: step1.type === type ? 'var(--navy)' : 'var(--text)' }}>{label}</p>
-              <p className="text-xs mt-0.5" style={{ color: 'var(--text-3)' }}>{description}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-2" style={{ color: 'var(--text)' }}>Channels *</label>
-        <div className="flex gap-3">
-          {CHANNELS.map(({ value, label }) => (
-            <button
-              key={value}
-              onClick={() => toggleChannel(value)}
-              className="rounded-lg border px-4 py-2 text-sm font-medium transition-all"
-              style={{
-                borderColor: step1.channels.includes(value) ? 'var(--navy)' : 'var(--border)',
-                background: step1.channels.includes(value) ? 'var(--navy-50)' : 'var(--card)',
-                color: step1.channels.includes(value) ? 'var(--navy)' : 'var(--text-2)',
-              }}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div>
-        <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Description</label>
-        <textarea
-          className="w-full rounded border px-3 py-2 text-sm outline-none"
-          style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-          rows={3}
-          placeholder="Internal notes about this campaign…"
-          value={step1.description}
-          onChange={(e) => updateStep1({ description: e.target.value })}
-        />
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>Workspace</label>
+    <div className="builder">
+      {/* LEFT: Campaign Basics */}
+      <Panel title="Campaign Basics" subtitle="Name and organize your campaign">
+        <div className="field">
+          <label className="label">Campaign Name *</label>
           <input
-            className="w-full rounded border px-3 py-2 text-sm outline-none"
-            style={{ borderColor: 'var(--border)', color: 'var(--text)' }}
-            value={step1.workspace}
-            onChange={(e) => updateStep1({ workspace: e.target.value })}
+            className="input"
+            value={step1.name}
+            onChange={(e) => updateStep1({ name: e.target.value })}
+            placeholder="e.g. Welcome Series — October 2026"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium mb-1" style={{ color: 'var(--text)' }}>A/B Test</label>
-          <button
-            onClick={() => updateStep1({ abTestEnabled: !step1.abTestEnabled })}
-            className="flex items-center gap-2 text-sm"
-            style={{ color: step1.abTestEnabled ? 'var(--navy)' : 'var(--text-2)' }}
+        <div className="field">
+          <label className="label">Description</label>
+          <textarea
+            className="input textarea"
+            value={step1.description}
+            onChange={(e) => updateStep1({ description: e.target.value })}
+            placeholder="Internal notes about this campaign"
+          />
+        </div>
+        <div className="field">
+          <label className="label">Workspace</label>
+          <select
+            className="input"
+            value={step1.workspace}
+            onChange={(e) => updateStep1({ workspace: e.target.value })}
           >
-            <span
-              className="relative inline-flex h-5 w-9 items-center rounded-full transition-colors"
-              style={{ background: step1.abTestEnabled ? 'var(--navy)' : 'var(--border)' }}
-            >
-              <span
-                className="inline-block h-4 w-4 transform rounded-full bg-white transition-transform"
-                style={{ transform: `translateX(${step1.abTestEnabled ? '1.1rem' : '0.1rem'})` }}
+            {WORKSPACES.map((w) => <option key={w} value={w}>{w}</option>)}
+          </select>
+        </div>
+        <div className="field">
+          <label className="label">Tags</label>
+          <TagInput value={step1.tags} onChange={(tags) => updateStep1({ tags })} placeholder="Add tags…" />
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 4 }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text)' }}>A/B Test</div>
+            <div style={{ fontSize: 11, color: 'var(--text-2)' }}>Split audience into variants</div>
+          </div>
+          <ToggleSwitch
+            checked={step1.abTestEnabled}
+            onCheckedChange={(v) => updateStep1({ abTestEnabled: v })}
+          />
+        </div>
+      </Panel>
+
+      {/* MIDDLE: Type & Channel */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <Panel title="Campaign Type" subtitle="Choose how this campaign fires">
+          <div className="type-cards">
+            {CAMPAIGN_TYPES.map((ct) => (
+              <TypeCard
+                key={ct.type}
+                type={ct.type}
+                label={ct.label}
+                description={ct.description}
+                Icon={ct.Icon}
+                selected={step1.type === ct.type}
+                onSelect={(t) => updateStep1({ type: t })}
               />
-            </span>
-            {step1.abTestEnabled ? 'Enabled' : 'Disabled'}
-          </button>
-        </div>
+            ))}
+          </div>
+        </Panel>
+
+        <Panel title="Channels" subtitle="Select one or more channels">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {CHANNELS.map((ch) => (
+              <ChannelToggleCard
+                key={ch.channel}
+                channel={ch.channel}
+                label={ch.label}
+                description={ch.description}
+                Icon={ch.Icon}
+                active={step1.channels.includes(ch.channel)}
+                onToggle={toggleChannel}
+              />
+            ))}
+          </div>
+        </Panel>
       </div>
 
-      <div>
-        <p className="text-sm font-medium mb-2" style={{ color: 'var(--text)' }}>Starting Templates</p>
-        <div className="flex flex-wrap gap-2">
-          {STARTING_TEMPLATES.map((t) => (
-            <button
-              key={t.id}
-              onClick={() => updateStep1({ templateId: t.id })}
-              className="rounded-full border px-3 py-1 text-xs font-medium transition-all"
-              style={{
-                borderColor: step1.templateId === t.id ? 'var(--navy)' : 'var(--border)',
-                background: step1.templateId === t.id ? 'var(--navy-50)' : 'transparent',
-                color: step1.templateId === t.id ? 'var(--navy)' : 'var(--text-2)',
-              }}
-            >
-              {t.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <div className="flex justify-end pt-4 border-t" style={{ borderColor: 'var(--border)' }}>
-        <button
-          disabled={!canContinue}
-          onClick={() => setCurrentStep(2)}
-          className="rounded-md px-6 py-2 text-sm font-medium text-white disabled:opacity-40"
-          style={{ background: 'var(--navy)' }}
-        >
-          Continue
-        </button>
-      </div>
+      {/* RIGHT: Guide */}
+      <GuidePanel canContinue={canContinue} saving={saving} onNext={handleContinue} />
     </div>
   )
 }

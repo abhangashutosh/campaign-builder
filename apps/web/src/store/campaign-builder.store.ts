@@ -20,6 +20,10 @@ interface Step2Data {
 
 interface Step3Data {
   templateId: string
+  subject: string
+  preheader: string
+  senderEmail: string
+  variables: Record<string, string>
 }
 
 interface Step4Data {
@@ -66,7 +70,13 @@ const defaultStep1: Step1Data = {
 }
 
 const defaultStep2: Step2Data = { audienceSegmentId: '' }
-const defaultStep3: Step3Data = { templateId: '' }
+const defaultStep3: Step3Data = {
+  templateId: '',
+  subject: '',
+  preheader: '',
+  senderEmail: '',
+  variables: {},
+}
 const defaultStep4: Step4Data = {
   scheduledFor: '',
   metadata: {},
@@ -104,11 +114,12 @@ export const useCampaignBuilderStore = create<CampaignBuilderStore>()(
     }),
     {
       name: 'campaign-builder',
-      version: 2,
+      version: 3,
       migrate: (persisted) => {
         const s = persisted as Partial<CampaignBuilderStore>
         return {
           ...s,
+          step3: { ...defaultStep3, ...(s.step3 ?? {}) },
           step4: { ...defaultStep4, ...(s.step4 ?? {}) },
         }
       },
