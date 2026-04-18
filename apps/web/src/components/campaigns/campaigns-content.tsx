@@ -68,7 +68,7 @@ type StatusTab = typeof STATUS_TABS[number]
 const PAGE_SIZE = 10
 
 export function CampaignsContent() {
-  const { data: campaigns = [], isLoading } = useCampaigns()
+  const { data: campaigns = [], isLoading, isError, error } = useCampaigns()
   const [activeTab, setActiveTab]         = useState<StatusTab>('All')
   const [channelFilter, setChannelFilter] = useState<'All' | 'Email' | 'WhatsApp'>('All')
   const [page, setPage]                   = useState(1)
@@ -112,6 +112,11 @@ export function CampaignsContent() {
       {isLoading ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: 200, color: 'var(--text-3)', fontSize: 13 }}>
           Loading campaigns…
+        </div>
+      ) : isError ? (
+        <div style={{ padding: '48px 24px', textAlign: 'center', color: 'var(--danger)', fontSize: 13 }}>
+          <div style={{ fontWeight: 600, marginBottom: 8 }}>Failed to load campaigns</div>
+          <div style={{ fontSize: 12, color: 'var(--text-3)' }}>{(error as Error)?.message ?? 'Unknown error'}</div>
         </div>
       ) : (
         <div className="card table-card">
