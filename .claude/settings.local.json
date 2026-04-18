@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:docs.nestjs.com)",
+      "WebFetch(domain:socket.io)",
+      "WebFetch(domain:thomasvds.com)",
+      "WebFetch(domain:dev.to)",
+      "WebFetch(domain:blog.logrocket.com)",
+      "WebFetch(domain:react.email)",
+      "Bash(mkdir -p \"D:/Rez_Data/rez/AIWorkshop/campaign-builder/docs/superpowers/plans\")",
+      "Bash(mkdir -p \"D:/Rez_Data/rez/AIWorkshop/campaign-builder/project/log\")"
+    ]
+  }
+}
